@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '../theme';
 import { useAuth } from '../auth/AuthContext';
 import { ThemeSelector } from './ThemeSelector';
@@ -15,7 +15,9 @@ import {
   ChevronDown,
   CreditCard,
   Palette,
-  UserCheck
+  UserCheck,
+  Search,
+  Plus
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
@@ -44,14 +46,58 @@ const CompanyAdminDashboard: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState<boolean>(false);
+  
+  // Organizations page state
+  const [orgSearchQuery, setOrgSearchQuery] = useState<string>('');
+  const [displayedOrgs, setDisplayedOrgs] = useState<number>(10);
 
   // Company Admin Navigation
   const navigationItems: NavigationItem[] = [
     { id: 'dashboard', icon: BarChart3, text: 'Dashboard', description: 'Platform Overview' },
-    { id: 'organizations', icon: Building2, text: 'Organizations', description: 'Manage Client Organizations', badge: '847' },
-    { id: 'driven-users', icon: Users, text: 'Driven Users', description: 'Platform User Management', badge: '12.4k' },
+    { id: 'organizations', icon: Building2, text: 'Organizations', description: 'Manage Client Organizations' },
+    { id: 'driven-users', icon: Users, text: 'Driven Users', description: 'Platform User Management' },
     { id: 'settings', icon: Settings, text: 'Settings', description: 'Platform Configuration' }
   ];
+
+  // Organizations mock data
+  const mockOrganizations = [
+    { id: 1, name: 'Cross Pest Control', active: true, userCount: 47, branchCount: 3, integrationCount: 5 },
+    { id: 2, name: 'White Knight', active: true, userCount: 23, branchCount: 2, integrationCount: 3 },
+    { id: 3, name: 'Pest-Stop', active: false, userCount: 8, branchCount: 1, integrationCount: 1 },
+    { id: 4, name: 'ACTION Termite & Pest Control', active: true, userCount: 156, branchCount: 8, integrationCount: 7 },
+    { id: 5, name: 'Thorn Pest Solutions', active: true, userCount: 34, branchCount: 2, integrationCount: 4 },
+    { id: 6, name: 'Pest Master', active: true, userCount: 67, branchCount: 4, integrationCount: 6 },
+    { id: 7, name: 'Trads Pest Control', active: false, userCount: 12, branchCount: 1, integrationCount: 2 },
+    { id: 8, name: 'Kanga Pest Control', active: true, userCount: 89, branchCount: 5, integrationCount: 5 },
+    { id: 9, name: 'Cape Pest Control', active: true, userCount: 45, branchCount: 3, integrationCount: 4 },
+    { id: 10, name: 'Elite Pest Solutions', active: true, userCount: 78, branchCount: 4, integrationCount: 6 },
+    { id: 11, name: 'Guardian Pest Control', active: false, userCount: 15, branchCount: 1, integrationCount: 1 },
+    { id: 12, name: 'ProShield Exterminating', active: true, userCount: 123, branchCount: 6, integrationCount: 8 },
+    { id: 13, name: 'Apex Pest Management', active: true, userCount: 56, branchCount: 3, integrationCount: 5 },
+    { id: 14, name: 'SafeGuard Pest Control', active: true, userCount: 91, branchCount: 5, integrationCount: 7 },
+    { id: 15, name: 'Premier Pest Services', active: false, userCount: 22, branchCount: 2, integrationCount: 2 },
+    { id: 16, name: 'BugBusters Inc', active: true, userCount: 38, branchCount: 2, integrationCount: 3 },
+    { id: 17, name: 'Termite Shield Solutions', active: true, userCount: 72, branchCount: 4, integrationCount: 6 },
+    { id: 18, name: 'EcoSafe Pest Control', active: true, userCount: 29, branchCount: 2, integrationCount: 4 }
+  ];
+
+  // Filter organizations based on search query
+  const filteredOrganizations = mockOrganizations.filter(org => 
+    org.name.toLowerCase().includes(orgSearchQuery.toLowerCase())
+  );
+
+  // Get visible organizations based on display count
+  const visibleOrganizations = filteredOrganizations.slice(0, displayedOrgs);
+
+  // Load more handler
+  const handleLoadMoreOrgs = () => {
+    setDisplayedOrgs(prev => prev + 10);
+  };
+
+  // Reset pagination when search changes
+  React.useEffect(() => {
+    setDisplayedOrgs(10);
+  }, [orgSearchQuery]);
 
   // Sample platform metrics
   const platformMetrics = {
@@ -337,9 +383,9 @@ return;
               border: `1px solid ${currentTheme.border}`,
               overflow: 'auto'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <h2 style={{ color: currentTheme.textPrimary, margin: 0, fontSize: '20px', fontWeight: '600' }}>
-                  Organizations
+                  Organizations ({filteredOrganizations.length})
                 </h2>
                 <button
                   style={{
@@ -350,11 +396,41 @@ return;
                     borderRadius: '8px',
                     cursor: 'pointer',
                     fontSize: '14px',
-                    fontWeight: '500'
+                    fontWeight: '500',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
                   }}
                 >
-                  + Add Organization
+                  <Plus size={16} />
+                  Add Organization
                 </button>
+              </div>
+
+              {/* Search Bar */}
+              <div style={{ position: 'relative', marginBottom: '24px' }}>
+                <Search size={16} style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: currentTheme.textSecondary
+                }} />
+                <input
+                  type="text"
+                  placeholder="Search organizations..."
+                  value={orgSearchQuery}
+                  onChange={(e) => setOrgSearchQuery(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 12px 12px 40px',
+                    border: `1px solid ${currentTheme.border}`,
+                    borderRadius: '8px',
+                    backgroundColor: currentTheme.cardBg,
+                    color: currentTheme.textPrimary,
+                    fontSize: '14px'
+                  }}
+                />
               </div>
               
               {/* Table Container */}
@@ -362,7 +438,7 @@ return;
                 {/* Organizations Table Header */}
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: '120px 2fr 100px 200px',
+                  gridTemplateColumns: '80px 2fr 80px 80px 80px 100px 200px',
                   gap: '16px',
                   padding: '16px 0',
                   borderBottom: `1px solid ${currentTheme.border}`,
@@ -372,37 +448,54 @@ return;
                 }}>
                 <div>ID</div>
                 <div>Name</div>
-                <div>Active</div>
+                <div style={{ textAlign: 'center' }}>Users</div>
+                <div style={{ textAlign: 'center' }}>Branches</div>
+                <div style={{ textAlign: 'center' }}>Integrations</div>
+                <div style={{ textAlign: 'center' }}>Status</div>
                 <div>Actions</div>
               </div>
 
-              {/* Sample Organizations Data */}
-              {[
-                { name: 'Cross Pest Control', active: true },
-                { name: 'White Knight', active: true },
-                { name: 'Pest-Stop', active: false },
-                { name: 'ACTION Termite & Pest Control', active: true },
-                { name: 'Thorn Pest Solutions', active: true },
-                { name: 'Pest Master', active: true },
-                { name: 'Trads Pest Control', active: false },
-                { name: 'Kanga Pest Control', active: true },
-                { name: 'Cape Pest Control', active: true }
-              ].map((org, index) => (
-                <div key={index} style={{
+              {/* Organizations Data */}
+              {visibleOrganizations.map((org) => (
+                <div key={org.id} style={{
                   display: 'grid',
-                  gridTemplateColumns: '120px 2fr 100px 200px',
+                  gridTemplateColumns: '80px 2fr 80px 80px 80px 100px 200px',
                   gap: '16px',
                   padding: '20px 0',
                   borderBottom: `1px solid ${currentTheme.border}`,
                   alignItems: 'center'
                 }}>
                   <div style={{ color: currentTheme.textPrimary, fontWeight: '500' }}>
-                    {index + 1}
+                    {org.id}
                   </div>
                   <div style={{ color: currentTheme.textPrimary, fontWeight: '500' }}>
                     {org.name}
                   </div>
-                  <div>
+                  <div style={{ 
+                    color: currentTheme.textPrimary, 
+                    fontWeight: '600',
+                    textAlign: 'center',
+                    fontSize: '16px'
+                  }}>
+                    {org.userCount}
+                  </div>
+                  <div style={{ 
+                    color: currentTheme.textPrimary, 
+                    fontWeight: '600',
+                    textAlign: 'center',
+                    fontSize: '16px'
+                  }}>
+                    {org.branchCount}
+                  </div>
+                  <div style={{ 
+                    color: currentTheme.textPrimary, 
+                    fontWeight: '600',
+                    textAlign: 'center',
+                    fontSize: '16px'
+                  }}>
+                    {org.integrationCount}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <span style={{
                       padding: '4px 8px',
                       borderRadius: '12px',
@@ -441,7 +534,7 @@ return;
                       Manage
                     </button>
                     <button
-                      onClick={() => handleLoginAs(org.name, index + 1)}
+                      onClick={() => handleLoginAs(org.name, org.id)}
                       style={{
                         backgroundColor: currentTheme.primary,
                         border: 'none',
@@ -467,21 +560,51 @@ return;
               ))}
 
               {/* Load More Button */}
-              <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                <button
-                  style={{
-                    backgroundColor: 'transparent',
-                    border: `1px solid ${currentTheme.border}`,
-                    color: currentTheme.textPrimary,
-                    padding: '10px 20px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                  }}
-                >
-                  Load More Organizations
-                </button>
-              </div>
+              {filteredOrganizations.length > visibleOrganizations.length && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '24px',
+                  borderTop: `1px solid ${currentTheme.border}`
+                }}>
+                  <button
+                    onClick={handleLoadMoreOrgs}
+                    style={{
+                      padding: orgSearchQuery.trim() ? '8px 16px' : '12px 24px',
+                      backgroundColor: orgSearchQuery.trim() ? 'transparent' : currentTheme.primary + '10',
+                      border: `2px solid ${currentTheme.primary}`,
+                      borderRadius: '12px',
+                      color: currentTheme.primary,
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      transition: 'all 0.2s ease',
+                      minWidth: orgSearchQuery.trim() ? 'auto' : '200px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = currentTheme.primary;
+                      e.currentTarget.style.color = 'white';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = `0 4px 12px ${currentTheme.primary}30`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = orgSearchQuery.trim() ? 'transparent' : currentTheme.primary + '10';
+                      e.currentTarget.style.color = currentTheme.primary;
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    <Plus size={16} />
+                    {orgSearchQuery.trim() 
+                      ? `Show More (${filteredOrganizations.length - visibleOrganizations.length} remaining)`
+                      : `Load More Organizations (${filteredOrganizations.length - visibleOrganizations.length} remaining)`
+                    }
+                  </button>
+                </div>
+              )}
               </div>
             </div>
           </div>

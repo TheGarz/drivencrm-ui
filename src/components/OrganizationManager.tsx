@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../theme/ThemeContext';
 import UserManagement from './UserManagement';
+import AddNewUser from './AddNewUser';
 import { 
   Building2, 
   Settings, 

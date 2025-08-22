@@ -6,23 +6,12 @@ import {
   User,
   Users,
   Link,
-  Save,
-  X,
+  Plus,
+  AlertCircle,
   Search,
-  Plus
+  X,
+  Check
 } from 'lucide-react';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  status: 'Active' | 'Inactive';
-  lastLogin: string;
-  connectedCrmUser: string | null;
-  memberSince?: string;
-  closedOn?: string;
-}
 
 interface CrmUser {
   id: number;
@@ -48,24 +37,41 @@ interface Branch {
   type: 'Main Office' | 'Branch' | 'Service Center' | 'Warehouse';
 }
 
-interface UserManagementProps {
-  user: User;
-  onBack: () => void;
-  onUpdate: (userData: Partial<User>) => void;
+interface NewUserData {
+  firstName: string;
+  lastName: string;
+  middleName: string;
+  username: string;
+  email: string;
+  phone: string;
+  role: string;
+  status: string;
+  attachedCrmUser?: CrmUser | null;
+  assignedBranch?: Branch | null;
+  memberSince?: string;
+  id?: number;
+  name?: string;
+  connectedCrmUser?: string | null;
+  lastLogin?: string;
 }
 
-const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate }) => {
+interface AddNewUserProps {
+  onBack: () => void;
+  onSave: (userData: NewUserData) => void;
+}
+
+const AddNewUser: React.FC<AddNewUserProps> = ({ onBack, onSave }) => {
   const { currentTheme } = useTheme();
   const [activeSection, setActiveSection] = useState('details');
-  const [editUserData, setEditUserData] = useState({
-    firstName: user?.name?.split(' ')[0] || '',
-    lastName: user?.name?.split(' ').slice(1).join(' ') || '',
+  const [newUserData, setNewUserData] = useState({
+    firstName: '',
+    lastName: '',
     middleName: '',
-    username: user?.email?.split('@')[0] || '',
-    email: user?.email || '',
+    username: '',
+    email: '',
     phone: '',
-    role: user?.role?.toUpperCase().replace(' ', '_') || 'OWNER',
-    status: user?.status || 'Active'
+    role: 'OWNER',
+    status: 'Active'
   });
 
   // Mock data for CRM users, branches, and organizations
@@ -277,40 +283,82 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
     }
   ]);
 
-  const [attachedCrmUser, setAttachedCrmUser] = useState(null);
-  const [assignedBranch, setAssignedBranch] = useState(null);
+  const [attachedCrmUser, setAttachedCrmUser] = useState<CrmUser | null>(null);
+  const [assignedBranch, setAssignedBranch] = useState<Branch | null>(null);
   const [searchCrmUser, setSearchCrmUser] = useState('');
   const [searchBranch, setSearchBranch] = useState('');
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   const [displayedCrmUsers, setDisplayedCrmUsers] = useState(10);
   const [displayedBranches, setDisplayedBranches] = useState(8);
 
   const handleInputChange = (field: string, value: string) => {
-    setEditUserData(prev => ({
+    setNewUserData(prev => ({
       ...prev,
       [field]: value
     }));
+    
+    // Clear validation error for this field
+    if (validationErrors[field]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const errors: {[key: string]: string} = {};
+
+    if (!newUserData.firstName.trim()) {
+      errors.firstName = 'First name is required';
+    }
+    if (!newUserData.lastName.trim()) {
+      errors.lastName = 'Last name is required';
+    }
+    if (!newUserData.username.trim()) {
+      errors.username = 'Username is required';
+    }
+    if (!newUserData.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(newUserData.email)) {
+      errors.email = 'Email format is invalid';
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSaveUser = () => {
-    onUpdate(editUserData);
-    // Saving user
+    if (validateForm()) {
+      const completeUserData = {
+        ...newUserData,
+        attachedCrmUser,
+        assignedBranch,
+        memberSince: new Date().toISOString(),
+        id: Date.now(), // Temporary ID for demo
+        name: `${newUserData.firstName} ${newUserData.lastName}`.trim(),
+        connectedCrmUser: attachedCrmUser ? `${attachedCrmUser.firstName} ${attachedCrmUser.lastName}`.trim() : null,
+        lastLogin: new Date().toISOString()
+      };
+      
+      onSave(completeUserData);
+    }
   };
 
   const handleAttachCrmUser = (crmUser: CrmUser) => {
     setAttachedCrmUser(crmUser);
-    // Attaching CRM user
   };
 
   const handleAssignBranch = (branch: Branch) => {
     setAssignedBranch(branch);
-    // Assigning branch
   };
 
   const sections = [
     { id: 'details', label: 'User Details', icon: User },
     { id: 'crm-user', label: 'CRM User', icon: Link },
     { id: 'branch', label: 'Company Branch', icon: Building2 },
-    { id: 'relationships', label: 'Relationships', icon: Users }
+    { id: 'relationships', label: 'Summary', icon: Users }
   ];
 
   const filteredCrmUsers = crmUsers.filter(user =>
@@ -355,33 +403,46 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
         alignItems: 'center',
         marginBottom: '24px'
       }}>
-        <h3 style={{
-          color: currentTheme.textPrimary,
-          margin: 0,
-          fontSize: '18px',
-          fontWeight: '600'
+        <div>
+          <h3 style={{
+            color: currentTheme.textPrimary,
+            margin: 0,
+            fontSize: '18px',
+            fontWeight: '600'
+          }}>
+            New User Information
+          </h3>
+          <p style={{
+            color: currentTheme.textSecondary,
+            margin: '4px 0 0 0',
+            fontSize: '14px'
+          }}>
+            Enter the basic information for the new user account
+          </p>
+        </div>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          backgroundColor: currentTheme.success + '15',
+          border: `1px solid ${currentTheme.success}30`,
+          borderRadius: '8px',
+          padding: '8px 12px'
         }}>
-          User Information
-        </h3>
-        <button
-          onClick={handleSaveUser}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: currentTheme.primary,
-            border: 'none',
-            borderRadius: '8px',
-            color: 'white',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <Save size={16} />
-          Save Changes
-        </button>
+          <div style={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            backgroundColor: currentTheme.success
+          }} />
+          <span style={{
+            color: currentTheme.success,
+            fontSize: '12px',
+            fontWeight: '500'
+          }}>
+            Creating New User
+          </span>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
@@ -394,22 +455,36 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
             fontWeight: '500',
             marginBottom: '6px'
           }}>
-            First Name
+            First Name *
           </label>
           <input
             type="text"
-            value={editUserData.firstName}
+            value={newUserData.firstName}
             onChange={(e) => handleInputChange('firstName', e.target.value)}
+            placeholder="Enter first name"
             style={{
               width: '100%',
               padding: '10px 12px',
-              border: `1px solid ${currentTheme.border}`,
+              border: `1px solid ${validationErrors.firstName ? currentTheme.danger : currentTheme.border}`,
               borderRadius: '8px',
               backgroundColor: currentTheme.cardBg,
               color: currentTheme.textPrimary,
               fontSize: '14px'
             }}
           />
+          {validationErrors.firstName && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              marginTop: '4px',
+              color: currentTheme.danger,
+              fontSize: '12px'
+            }}>
+              <AlertCircle size={12} />
+              {validationErrors.firstName}
+            </div>
+          )}
         </div>
 
         {/* Last Name */}
@@ -421,22 +496,36 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
             fontWeight: '500',
             marginBottom: '6px'
           }}>
-            Last Name
+            Last Name *
           </label>
           <input
             type="text"
-            value={editUserData.lastName}
+            value={newUserData.lastName}
             onChange={(e) => handleInputChange('lastName', e.target.value)}
+            placeholder="Enter last name"
             style={{
               width: '100%',
               padding: '10px 12px',
-              border: `1px solid ${currentTheme.border}`,
+              border: `1px solid ${validationErrors.lastName ? currentTheme.danger : currentTheme.border}`,
               borderRadius: '8px',
               backgroundColor: currentTheme.cardBg,
               color: currentTheme.textPrimary,
               fontSize: '14px'
             }}
           />
+          {validationErrors.lastName && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              marginTop: '4px',
+              color: currentTheme.danger,
+              fontSize: '12px'
+            }}>
+              <AlertCircle size={12} />
+              {validationErrors.lastName}
+            </div>
+          )}
         </div>
 
         {/* Middle Name */}
@@ -452,9 +541,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
           </label>
           <input
             type="text"
-            value={editUserData.middleName}
+            value={newUserData.middleName}
             onChange={(e) => handleInputChange('middleName', e.target.value)}
-            placeholder="Enter middle name"
+            placeholder="Enter middle name (optional)"
             style={{
               width: '100%',
               padding: '10px 12px',
@@ -476,22 +565,36 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
             fontWeight: '500',
             marginBottom: '6px'
           }}>
-            Username
+            Username *
           </label>
           <input
             type="text"
-            value={editUserData.username}
+            value={newUserData.username}
             onChange={(e) => handleInputChange('username', e.target.value)}
+            placeholder="Enter username"
             style={{
               width: '100%',
               padding: '10px 12px',
-              border: `1px solid ${currentTheme.border}`,
+              border: `1px solid ${validationErrors.username ? currentTheme.danger : currentTheme.border}`,
               borderRadius: '8px',
               backgroundColor: currentTheme.cardBg,
               color: currentTheme.textPrimary,
               fontSize: '14px'
             }}
           />
+          {validationErrors.username && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              marginTop: '4px',
+              color: currentTheme.danger,
+              fontSize: '12px'
+            }}>
+              <AlertCircle size={12} />
+              {validationErrors.username}
+            </div>
+          )}
         </div>
 
         {/* Email */}
@@ -503,22 +606,36 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
             fontWeight: '500',
             marginBottom: '6px'
           }}>
-            eMail
+            Email *
           </label>
           <input
             type="email"
-            value={editUserData.email}
+            value={newUserData.email}
             onChange={(e) => handleInputChange('email', e.target.value)}
+            placeholder="Enter email address"
             style={{
               width: '100%',
               padding: '10px 12px',
-              border: `1px solid ${currentTheme.border}`,
+              border: `1px solid ${validationErrors.email ? currentTheme.danger : currentTheme.border}`,
               borderRadius: '8px',
               backgroundColor: currentTheme.cardBg,
               color: currentTheme.textPrimary,
               fontSize: '14px'
             }}
           />
+          {validationErrors.email && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              marginTop: '4px',
+              color: currentTheme.danger,
+              fontSize: '12px'
+            }}>
+              <AlertCircle size={12} />
+              {validationErrors.email}
+            </div>
+          )}
         </div>
 
         {/* Phone */}
@@ -534,9 +651,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
           </label>
           <input
             type="tel"
-            value={editUserData.phone}
+            value={newUserData.phone}
             onChange={(e) => handleInputChange('phone', e.target.value)}
-            placeholder="Enter phone number"
+            placeholder="Enter phone number (optional)"
             style={{
               width: '100%',
               padding: '10px 12px',
@@ -558,10 +675,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
             fontWeight: '500',
             marginBottom: '6px'
           }}>
-            User Role
+            User Role *
           </label>
           <select
-            value={editUserData.role}
+            value={newUserData.role}
             onChange={(e) => handleInputChange('role', e.target.value)}
             style={{
               width: '100%',
@@ -596,39 +713,94 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
             fontWeight: '500',
             marginBottom: '6px'
           }}>
-            Status
+            Initial Status
           </label>
           <div style={{ display: 'flex', gap: '12px' }}>
             <button
               onClick={() => handleInputChange('status', 'Active')}
               style={{
                 padding: '8px 16px',
-                border: `1px solid ${editUserData.status === 'Active' ? currentTheme.success : currentTheme.border}`,
+                border: `1px solid ${newUserData.status === 'Active' ? currentTheme.success : currentTheme.border}`,
                 borderRadius: '8px',
-                backgroundColor: editUserData.status === 'Active' ? currentTheme.success : 'transparent',
-                color: editUserData.status === 'Active' ? 'white' : currentTheme.textPrimary,
+                backgroundColor: newUserData.status === 'Active' ? currentTheme.success : 'transparent',
+                color: newUserData.status === 'Active' ? 'white' : currentTheme.textPrimary,
                 cursor: 'pointer',
                 fontSize: '14px',
-                fontWeight: '500'
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
+              {newUserData.status === 'Active' && <Check size={14} />}
               Active
             </button>
             <button
               onClick={() => handleInputChange('status', 'Inactive')}
               style={{
                 padding: '8px 16px',
-                border: `1px solid ${editUserData.status === 'Inactive' ? currentTheme.danger : currentTheme.border}`,
+                border: `1px solid ${newUserData.status === 'Inactive' ? currentTheme.danger : currentTheme.border}`,
                 borderRadius: '8px',
-                backgroundColor: editUserData.status === 'Inactive' ? currentTheme.danger : 'transparent',
-                color: editUserData.status === 'Inactive' ? 'white' : currentTheme.textPrimary,
+                backgroundColor: newUserData.status === 'Inactive' ? currentTheme.danger : 'transparent',
+                color: newUserData.status === 'Inactive' ? 'white' : currentTheme.textPrimary,
                 cursor: 'pointer',
                 fontSize: '14px',
-                fontWeight: '500'
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
-              Close
+              {newUserData.status === 'Inactive' && <Check size={14} />}
+              Inactive
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Auto-generated fields info */}
+      <div style={{
+        marginTop: '24px',
+        padding: '16px',
+        backgroundColor: currentTheme.background,
+        borderRadius: '8px',
+        border: `1px solid ${currentTheme.border}`
+      }}>
+        <h4 style={{
+          color: currentTheme.textPrimary,
+          margin: '0 0 8px 0',
+          fontSize: '14px',
+          fontWeight: '600'
+        }}>
+          Auto-Generated Information
+        </h4>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '12px',
+          fontSize: '12px'
+        }}>
+          <div>
+            <span style={{ color: currentTheme.textSecondary }}>Member Since: </span>
+            <span style={{ color: currentTheme.textPrimary }}>
+              {new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: '2-digit' 
+              })}
+            </span>
+          </div>
+          <div>
+            <span style={{ color: currentTheme.textSecondary }}>User ID: </span>
+            <span style={{ color: currentTheme.textPrimary }}>
+              Auto-assigned on creation
+            </span>
+          </div>
+          <div>
+            <span style={{ color: currentTheme.textSecondary }}>Last Login: </span>
+            <span style={{ color: currentTheme.textPrimary }}>
+              Not yet logged in
+            </span>
           </div>
         </div>
       </div>
@@ -642,14 +814,23 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
       border: `1px solid ${currentTheme.border}`,
       padding: '24px'
     }}>
-      <h3 style={{
-        color: currentTheme.textPrimary,
-        margin: '0 0 16px 0',
-        fontSize: '18px',
-        fontWeight: '600'
-      }}>
-        Attach CRM User
-      </h3>
+      <div style={{ marginBottom: '24px' }}>
+        <h3 style={{
+          color: currentTheme.textPrimary,
+          margin: '0 0 4px 0',
+          fontSize: '18px',
+          fontWeight: '600'
+        }}>
+          Attach CRM User (Optional)
+        </h3>
+        <p style={{
+          color: currentTheme.textSecondary,
+          margin: 0,
+          fontSize: '14px'
+        }}>
+          Connect this user to an existing CRM user account for data synchronization
+        </p>
+      </div>
 
       {attachedCrmUser ? (
         <div style={{
@@ -662,12 +843,19 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{
-                color: currentTheme.textPrimary,
-                fontSize: '16px',
-                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
                 marginBottom: '4px'
               }}>
-                {attachedCrmUser.firstName} {attachedCrmUser.lastName}
+                <Check size={16} style={{ color: currentTheme.success }} />
+                <span style={{
+                  color: currentTheme.textPrimary,
+                  fontSize: '16px',
+                  fontWeight: '500'
+                }}>
+                  {attachedCrmUser.firstName} {attachedCrmUser.lastName}
+                </span>
               </div>
               <div style={{
                 color: currentTheme.textSecondary,
@@ -703,7 +891,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
             }} />
             <input
               type="text"
-              placeholder="Search CRM users..."
+              placeholder="Search CRM users by name or email..."
               value={searchCrmUser}
               onChange={(e) => setSearchCrmUser(e.target.value)}
               style={{
@@ -979,14 +1167,23 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
       border: `1px solid ${currentTheme.border}`,
       padding: '24px'
     }}>
-      <h3 style={{
-        color: currentTheme.textPrimary,
-        margin: '0 0 16px 0',
-        fontSize: '18px',
-        fontWeight: '600'
-      }}>
-        Assign Company Branch
-      </h3>
+      <div style={{ marginBottom: '24px' }}>
+        <h3 style={{
+          color: currentTheme.textPrimary,
+          margin: '0 0 4px 0',
+          fontSize: '18px',
+          fontWeight: '600'
+        }}>
+          Assign Company Branch (Optional)
+        </h3>
+        <p style={{
+          color: currentTheme.textSecondary,
+          margin: 0,
+          fontSize: '14px'
+        }}>
+          Assign this user to a specific company branch for location-based access control
+        </p>
+      </div>
 
       {assignedBranch ? (
         <div style={{
@@ -999,12 +1196,19 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{
-                color: currentTheme.textPrimary,
-                fontSize: '16px',
-                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
                 marginBottom: '4px'
               }}>
-                {assignedBranch.name}
+                <Check size={16} style={{ color: currentTheme.success }} />
+                <span style={{
+                  color: currentTheme.textPrimary,
+                  fontSize: '16px',
+                  fontWeight: '500'
+                }}>
+                  {assignedBranch.name}
+                </span>
               </div>
               <div style={{
                 color: currentTheme.textSecondary,
@@ -1359,27 +1563,36 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
     </div>
   );
 
-  const renderRelationshipsSection = () => (
+  const renderSummarySection = () => (
     <div style={{
       backgroundColor: currentTheme.cardBg,
       borderRadius: '12px',
       border: `1px solid ${currentTheme.border}`,
       padding: '24px'
     }}>
-      <h3 style={{
-        color: currentTheme.textPrimary,
-        margin: '0 0 16px 0',
-        fontSize: '18px',
-        fontWeight: '600'
-      }}>
-        Organization Relationships
-      </h3>
+      <div style={{ marginBottom: '24px' }}>
+        <h3 style={{
+          color: currentTheme.textPrimary,
+          margin: '0 0 4px 0',
+          fontSize: '18px',
+          fontWeight: '600'
+        }}>
+          User Creation Summary
+        </h3>
+        <p style={{
+          color: currentTheme.textSecondary,
+          margin: 0,
+          fontSize: '14px'
+        }}>
+          Review the information before creating the new user account
+        </p>
+      </div>
 
       <div style={{ display: 'grid', gap: '16px' }}>
-        {/* Current Attachments Summary */}
+        {/* User Information Summary */}
         <div style={{
           padding: '16px',
-          backgroundColor: currentTheme.cardBg,
+          backgroundColor: currentTheme.background,
           border: `1px solid ${currentTheme.border}`,
           borderRadius: '8px'
         }}>
@@ -1389,7 +1602,90 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
             fontSize: '16px',
             fontWeight: '600'
           }}>
-            Current Attachments
+            User Information
+          </h4>
+
+          <div style={{ display: 'grid', gap: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: currentTheme.textSecondary, fontSize: '14px' }}>Full Name:</span>
+              <span style={{ 
+                color: currentTheme.textPrimary, 
+                fontSize: '14px',
+                fontWeight: '500'
+              }}>
+                {`${newUserData.firstName} ${newUserData.middleName ? newUserData.middleName + ' ' : ''}${newUserData.lastName}`.trim() || 'Not provided'}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: currentTheme.textSecondary, fontSize: '14px' }}>Email:</span>
+              <span style={{ 
+                color: currentTheme.textPrimary, 
+                fontSize: '14px',
+                fontWeight: '500'
+              }}>
+                {newUserData.email || 'Not provided'}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: currentTheme.textSecondary, fontSize: '14px' }}>Username:</span>
+              <span style={{ 
+                color: currentTheme.textPrimary, 
+                fontSize: '14px',
+                fontWeight: '500'
+              }}>
+                {newUserData.username || 'Not provided'}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: currentTheme.textSecondary, fontSize: '14px' }}>Role:</span>
+              <span style={{ 
+                color: currentTheme.textPrimary, 
+                fontSize: '14px',
+                fontWeight: '500'
+              }}>
+                {newUserData.role.replace(/_/g, ' ')}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: currentTheme.textSecondary, fontSize: '14px' }}>Status:</span>
+              <span style={{ 
+                color: newUserData.status === 'Active' ? currentTheme.success : currentTheme.danger, 
+                fontSize: '14px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                <div style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  backgroundColor: newUserData.status === 'Active' ? currentTheme.success : currentTheme.danger
+                }} />
+                {newUserData.status}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Relationships Summary */}
+        <div style={{
+          padding: '16px',
+          backgroundColor: currentTheme.background,
+          border: `1px solid ${currentTheme.border}`,
+          borderRadius: '8px'
+        }}>
+          <h4 style={{
+            color: currentTheme.textPrimary,
+            margin: '0 0 12px 0',
+            fontSize: '16px',
+            fontWeight: '600'
+          }}>
+            Relationships & Assignments
           </h4>
 
           <div style={{ display: 'grid', gap: '8px' }}>
@@ -1428,57 +1724,49 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
           </div>
         </div>
 
-        {/* Relationship Actions */}
+        {/* Action Buttons */}
         <div style={{
-          padding: '16px',
-          backgroundColor: currentTheme.cardBg,
-          border: `1px solid ${currentTheme.border}`,
-          borderRadius: '8px'
+          display: 'flex',
+          gap: '12px',
+          justifyContent: 'flex-end',
+          marginTop: '8px'
         }}>
-          <h4 style={{
-            color: currentTheme.textPrimary,
-            margin: '0 0 12px 0',
-            fontSize: '16px',
-            fontWeight: '600'
-          }}>
-            Relationship Management
-          </h4>
-
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <button
-              style={{
-                padding: '8px 16px',
-                backgroundColor: currentTheme.primary,
-                border: 'none',
-                borderRadius: '8px',
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-            >
-              <Save size={16} />
-              Save All Relationships
-            </button>
-
-            <button
-              style={{
-                padding: '8px 16px',
-                backgroundColor: 'transparent',
-                border: `1px solid ${currentTheme.border}`,
-                borderRadius: '8px',
-                color: currentTheme.textPrimary,
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}
-            >
-              Reset Relationships
-            </button>
-          </div>
+          <button
+            onClick={onBack}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: 'transparent',
+              border: `1px solid ${currentTheme.border}`,
+              borderRadius: '8px',
+              color: currentTheme.textPrimary,
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSaveUser}
+            disabled={Object.keys(validationErrors).length > 0}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: currentTheme.primary,
+              border: 'none',
+              borderRadius: '8px',
+              color: 'white',
+              cursor: Object.keys(validationErrors).length > 0 ? 'not-allowed' : 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              opacity: Object.keys(validationErrors).length > 0 ? 0.6 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <Plus size={16} />
+            Create User
+          </button>
         </div>
       </div>
     </div>
@@ -1493,7 +1781,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
       case 'branch':
         return renderBranchSection();
       case 'relationships':
-        return renderRelationshipsSection();
+        return renderSummarySection();
       default:
         return renderUserDetails();
     }
@@ -1523,7 +1811,16 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = currentTheme.primary + '10';
+            e.currentTarget.style.borderColor = currentTheme.primary;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = currentTheme.cardBg;
+            e.currentTarget.style.borderColor = currentTheme.border;
           }}
         >
           <ArrowLeft size={16} />
@@ -1536,7 +1833,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
             fontWeight: 'bold',
             margin: '0 0 4px 0'
           }}>
-            Manage User - {user?.name || 'Unknown User'}
+            Add New User
           </h1>
           <div style={{
             color: currentTheme.textSecondary,
@@ -1545,43 +1842,69 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
             alignItems: 'center',
             gap: '8px'
           }}>
-            <span>{user?.email}</span>
+            <span>Create a new user account for Cross Pest Control</span>
             <span>•</span>
             <span style={{
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
-              color: user?.status === 'Active' ? currentTheme.success : currentTheme.danger
+              color: currentTheme.primary
             }}>
-              <div style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: user?.status === 'Active' ? currentTheme.success : currentTheme.danger
-              }} />
-              {user?.status}
-            </span>
-            <span>•</span>
-            <span style={{
-              color: currentTheme.textSecondary
-            }}>
-              {user?.status === 'Active' 
-                ? `Member since ${new Date(user?.memberSince || '2025-08-18').toLocaleDateString('en-US', {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })}`
-                : `Closed on ${new Date(user?.closedOn || '2025-08-18').toLocaleDateString('en-US', {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })}`
-              }
+              <Plus size={14} />
+              New Account Setup
             </span>
           </div>
         </div>
+      </div>
+
+      {/* Progress Indicator */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        marginBottom: '24px',
+        padding: '12px 16px',
+        backgroundColor: currentTheme.cardBg,
+        borderRadius: '8px',
+        border: `1px solid ${currentTheme.border}`
+      }}>
+        {sections.map((section, index) => {
+          const isActive = activeSection === section.id;
+          const isCompleted = index < sections.findIndex(s => s.id === activeSection);
+          return (
+            <div key={section.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                backgroundColor: isCompleted ? currentTheme.success : isActive ? currentTheme.primary : currentTheme.border,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: isCompleted || isActive ? 'white' : currentTheme.textSecondary,
+                fontSize: '10px',
+                fontWeight: '600'
+              }}>
+                {isCompleted ? <Check size={12} /> : index + 1}
+              </div>
+              <span style={{
+                color: isActive ? currentTheme.primary : currentTheme.textSecondary,
+                fontSize: '12px',
+                fontWeight: '500'
+              }}>
+                {section.label}
+              </span>
+              {index < sections.length - 1 && (
+                <div style={{
+                  width: '20px',
+                  height: '1px',
+                  backgroundColor: currentTheme.border,
+                  margin: '0 8px'
+                }} />
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Navigation Tabs */}
@@ -1594,16 +1917,17 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
       }}>
         {sections.map((section) => {
           const IconComponent = section.icon;
+          const isActive = activeSection === section.id;
           return (
             <button
               key={section.id}
               onClick={() => setActiveSection(section.id)}
               style={{
                 padding: '12px 16px',
-                backgroundColor: activeSection === section.id ? currentTheme.primary + '15' : 'transparent',
+                backgroundColor: isActive ? currentTheme.primary + '15' : 'transparent',
                 border: 'none',
-                borderBottom: activeSection === section.id ? `2px solid ${currentTheme.primary}` : '2px solid transparent',
-                color: activeSection === section.id ? currentTheme.primary : currentTheme.textSecondary,
+                borderBottom: isActive ? `2px solid ${currentTheme.primary}` : '2px solid transparent',
+                color: isActive ? currentTheme.primary : currentTheme.textSecondary,
                 cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: '500',
@@ -1626,4 +1950,4 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
   );
 };
 
-export default UserManagement;
+export default AddNewUser;
