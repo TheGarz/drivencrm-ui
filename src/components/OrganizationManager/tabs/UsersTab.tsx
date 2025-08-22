@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Users, Search, Plus, Download, Upload, UserMinus, Edit3, CheckCircle, XCircle, MapPin, Clock, Mail, Phone, Calendar, ChevronDown } from 'lucide-react';
 import { useTheme } from '../../../theme/ThemeContext';
 import type { Organization, User } from '../types';
+import UserManagement from '../../UserManagement';
 
 const UsersTab: React.FC<{ organization: Organization; onUpdate: (org: Organization) => void; onShowAddUser: () => void }> = ({ organization, onShowAddUser }) => {
   const { currentTheme } = useTheme();
@@ -143,28 +144,11 @@ const UsersTab: React.FC<{ organization: Organization; onUpdate: (org: Organizat
 
   if (showUserManagement && selectedUser) {
     return (
-      <div style={{
-        padding: '24px',
-        backgroundColor: currentTheme.cardBg,
-        borderRadius: '12px',
-        border: `1px solid ${currentTheme.border}`
-      }}>
-        <button onClick={handleCloseUserManagement} style={{
-          marginBottom: '16px',
-          padding: '8px 16px',
-          backgroundColor: currentTheme.primary,
-          border: 'none',
-          borderRadius: '8px',
-          color: 'white',
-          cursor: 'pointer'
-        }}>
-          Back to Users
-        </button>
-        <h2 style={{ color: currentTheme.textPrimary }}>User Management</h2>
-        <p style={{ color: currentTheme.textSecondary }}>
-          Editing user: {selectedUser.name} ({selectedUser.email})
-        </p>
-      </div>
+      <UserManagement
+        user={selectedUser}
+        onBack={handleCloseUserManagement}
+        onUpdate={handleUpdateUser}
+      />
     );
   }
 
