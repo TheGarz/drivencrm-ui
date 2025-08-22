@@ -52,18 +52,33 @@ CRMV2-UI/
 
 ### Prerequisites
 
-**Node.js Version**: This project requires Node.js 22.18.0 or higher.
+⚠️ **IMPORTANT: Node.js Version Requirement**
+
+This project requires **Node.js 20.19.0 or higher** (recommended: 22.12.0+) due to Vite 7 requirements.
+
+**Check your current version:**
+```bash
+node --version
+```
+
+**If you need to upgrade:**
 
 Using nvm (recommended):
 ```bash
-nvm use
+# Install and use Node.js 22.12.0
+nvm install 22.12.0
+nvm use 22.12.0
+
+# Or use the latest LTS
+nvm install --lts
+nvm use --lts
 ```
 
-Or install manually:
-```bash
-nvm install 22.18.0
-nvm use 22.18.0
-```
+**Version compatibility:**
+- ✅ **Node.js 22.12.0+** - Fully supported
+- ✅ **Node.js 20.19.0+** - Supported  
+- ❌ **Node.js 18.x** - **Will cause dev server errors**
+- ❌ **Node.js 16.x or lower** - Not supported
 
 ### Getting Started
 
@@ -171,6 +186,20 @@ The dashboard adapts based on user role and permissions:
 - **SCSS/CSS3** - Advanced styling with CSS modules and variables
 
 ## 🚨 Important Notes for Dev Team
+
+### ⚠️ Critical Setup Requirements
+
+**Node.js Version Issue:**
+- Current environment is running Node.js 18.20.6
+- **Development server WILL FAIL** with Node.js 18.x
+- **Production build works** but development requires Node.js 20.19.0+
+- Update Node.js before running `npm run dev`
+
+**Build Status:**
+- ✅ **Production build** - Works with Node.js 18.x+
+- ❌ **Development server** - Requires Node.js 20.19.0+
+- ✅ **TypeScript compilation** - No errors
+- ⚠️ **ESLint warnings** - 98 style issues (non-blocking)
 
 ### ⚠️ Work In Progress
 This UI/UX prototype is **actively under development** and will require regular updates as new features are implemented. The README will be updated accordingly.
