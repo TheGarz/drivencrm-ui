@@ -3854,20 +3854,311 @@ const MetricsTab: React.FC<{ organization: Organization; onUpdate: (org: Organiz
   );
 };
 
+// Integration interfaces
+interface Integration {
+  id: string;
+  name: string;
+  category: string;
+  icon: string;
+  description: string;
+  crmSystem?: boolean;
+}
+
+interface IntegrationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  integration: Integration | null;
+  onConnect: (integration: Integration) => void;
+  hasCrmIntegration: boolean;
+}
+
+// Integration Modal Component
+const IntegrationModal: React.FC<IntegrationModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  integration, 
+  onConnect, 
+  hasCrmIntegration 
+}) => {
+  const { currentTheme } = useTheme();
+
+  if (!isOpen || !integration) return null;
+
+  const canConnect = integration.crmSystem || hasCrmIntegration;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    }}>
+      <div style={{
+        backgroundColor: currentTheme.cardBg,
+        borderRadius: '12px',
+        border: `1px solid ${currentTheme.border}`,
+        padding: '32px',
+        maxWidth: '500px',
+        width: '90%',
+        maxHeight: '80vh',
+        overflow: 'auto'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h2 style={{ 
+            color: currentTheme.textPrimary, 
+            margin: 0, 
+            fontSize: '20px', 
+            fontWeight: '600' 
+          }}>
+            Connect {integration.name}
+          </h2>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: currentTheme.textSecondary,
+              cursor: 'pointer',
+              padding: '4px'
+            }}
+            aria-label="Close modal"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+          <div style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '16px',
+            backgroundColor: currentTheme.primary + '20',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '28px'
+          }}>
+            {integration.icon}
+          </div>
+          <div>
+            <h3 style={{
+              color: currentTheme.textPrimary,
+              margin: '0 0 4px 0',
+              fontSize: '18px',
+              fontWeight: '500'
+            }}>
+              {integration.name}
+            </h3>
+            <div style={{
+              display: 'inline-block',
+              padding: '4px 8px',
+              backgroundColor: currentTheme.primary + '20',
+              color: currentTheme.primary,
+              borderRadius: '12px',
+              fontSize: '12px',
+              fontWeight: '500'
+            }}>
+              {integration.category}
+            </div>
+          </div>
+        </div>
+
+        <p style={{
+          color: currentTheme.textSecondary,
+          fontSize: '14px',
+          lineHeight: '1.5',
+          marginBottom: '24px'
+        }}>
+          {integration.description}
+        </p>
+
+        {!canConnect && !integration.crmSystem && (
+          <div style={{
+            backgroundColor: currentTheme.warning + '20',
+            border: `1px solid ${currentTheme.warning}`,
+            borderRadius: '8px',
+            padding: '16px',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <AlertCircle size={20} color={currentTheme.warning} />
+            <div>
+              <div style={{
+                color: currentTheme.warning,
+                fontSize: '14px',
+                fontWeight: '500',
+                marginBottom: '4px'
+              }}>
+                CRM Integration Required
+              </div>
+              <div style={{
+                color: currentTheme.textSecondary,
+                fontSize: '13px'
+              }}>
+                You must connect a CRM system (PestPac, FieldRoutes, FieldWork, or BrioStack) before adding other integrations.
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+          <button
+            onClick={onClose}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: 'transparent',
+              border: `1px solid ${currentTheme.border}`,
+              borderRadius: '8px',
+              color: currentTheme.textPrimary,
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              if (canConnect) {
+                onConnect(integration);
+                onClose();
+              }
+            }}
+            disabled={!canConnect}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: canConnect ? currentTheme.primary : currentTheme.border,
+              border: 'none',
+              borderRadius: '8px',
+              color: canConnect ? 'white' : currentTheme.textSecondary,
+              cursor: canConnect ? 'pointer' : 'not-allowed',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            Connect Integration
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Integrations Tab Component
 const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Organization) => void }> = ({ organization }) => {
   const { currentTheme } = useTheme();
+  const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const serviceTypes = [
-    { id: 'FIELDROUTES', name: 'FieldRoutes', category: 'CRM', icon: '🔗' },
-    { id: 'HUBSPOT', name: 'HubSpot', category: 'Leads', icon: '🎯' },
-    { id: 'SAMSARA', name: 'Samsara', category: 'Fleet', icon: '🚚' },
-    { id: 'LISTEN360', name: 'Listen360', category: 'Reviews', icon: '⭐' },
-    { id: 'RINGCENTRAL', name: 'RingCentral', category: 'Phone', icon: '📞' }
+  // Complete list of 27 integrations from AppServer/src/lib
+  const allIntegrations: Integration[] = [
+    // CRM Systems
+    { id: 'PESTPAC', name: 'PestPac', category: 'CRM', icon: '🏢', description: 'Complete pest control management system with customer, scheduling, and billing features.', crmSystem: true },
+    { id: 'FIELDROUTES', name: 'FieldRoutes', category: 'CRM', icon: '🗺️', description: 'Field service management platform for route optimization and customer management.', crmSystem: true },
+    { id: 'FIELDWORK', name: 'FieldWork', category: 'CRM', icon: '📋', description: 'Mobile-first field service management for pest control and lawn care businesses.', crmSystem: true },
+    { id: 'BRIOSTACK', name: 'BrioStack', category: 'CRM', icon: '📊', description: 'Comprehensive business management software for service companies.', crmSystem: true },
+    
+    // Communication & Marketing
+    { id: 'HUBSPOT', name: 'HubSpot', category: 'Communication', icon: '🎯', description: 'Inbound marketing, sales, and customer service platform.' },
+    { id: 'GOHIGHLEVEL', name: 'GoHighLevel', category: 'Communication', icon: '📈', description: 'All-in-one marketing automation and CRM platform.' },
+    { id: 'RINGCENTRAL', name: 'RingCentral', category: 'Communication', icon: '📞', description: 'Cloud-based business communications and collaboration platform.' },
+    { id: 'CALLRAIL', name: 'CallRail', category: 'Communication', icon: '📱', description: 'Call tracking and analytics for marketing attribution.' },
+    { id: 'AIRCALL', name: 'Aircall', category: 'Communication', icon: '☎️', description: 'Cloud-based phone system for sales and support teams.' },
+    { id: 'DIALPAD', name: 'Dialpad', category: 'Communication', icon: '🔊', description: 'AI-powered business communications platform.' },
+    { id: 'NETSAPIENS', name: 'NetSapiens', category: 'Communication', icon: '📡', description: 'Cloud communications platform for service providers.' },
+    { id: 'POSTCALL', name: 'PostCall', category: 'Communication', icon: '📧', description: 'Automated follow-up and communication system.' },
+    { id: 'VOICEFORPEST', name: 'Voice for Pest', category: 'Communication', icon: '🎙️', description: 'Specialized voice services for pest control industry.' },
+    { id: 'CTM', name: 'CTM', category: 'Communication', icon: '📞', description: 'Call tracking and marketing attribution platform.' },
+    
+    // Fleet Management
+    { id: 'SAMSARA', name: 'Samsara', category: 'Fleet', icon: '🚚', description: 'Connected fleet management with GPS tracking and driver safety.' },
+    { id: 'VERIZONCONNECT', name: 'Verizon Connect', category: 'Fleet', icon: '🛰️', description: 'Fleet management and mobile workforce solutions.' },
+    { id: 'LINXUP', name: 'Linxup', category: 'Fleet', icon: '📍', description: 'GPS fleet tracking and management platform.' },
+    { id: 'ZUBIE', name: 'Zubie', category: 'Fleet', icon: '🚗', description: 'Connected car platform for fleet management.' },
+    { id: 'AZUGA', name: 'Azuga', category: 'Fleet', icon: '🛣️', description: 'Fleet management and driver behavior monitoring.' },
+    { id: 'BOUNCIE', name: 'Bouncie', category: 'Fleet', icon: '🔍', description: 'Vehicle tracking and diagnostics platform.' },
+    { id: 'SPIREON', name: 'Spireon', category: 'Fleet', icon: '📡', description: 'Fleet intelligence and asset tracking solutions.' },
+    { id: 'TELETRONICS', name: 'Teletronics', category: 'Fleet', icon: '📻', description: 'Vehicle tracking and fleet management systems.' },
+    { id: 'FLEETPRO', name: 'FleetPro', category: 'Fleet', icon: '🚛', description: 'Professional fleet management and optimization.' },
+    
+    // Reviews & Feedback
+    { id: 'LISTEN360', name: 'Listen360', category: 'Reviews', icon: '⭐', description: 'Customer feedback and review management platform.' },
+    { id: 'APPLAUSE', name: 'Applause', category: 'Reviews', icon: '👏', description: 'Customer experience and feedback collection.' },
+    
+    // Other Services
+    { id: 'DIGITALSOUTH', name: 'Digital South', category: 'Other', icon: '🌐', description: 'Digital marketing and web services.' },
+    { id: 'ONESTEP', name: 'OneStep', category: 'Other', icon: '👣', description: 'Specialized service integration platform.' }
   ];
+
+  const categories = ['All', 'CRM', 'Communication', 'Fleet', 'Reviews', 'Other'];
+
+  const hasCrmIntegration = organization.services?.some(service => 
+    allIntegrations.find(integration => integration.id === service.type)?.crmSystem
+  ) || false;
+
+  const connectedIntegrations = organization.services?.map(service => service.type) || [];
+
+  const filteredIntegrations = allIntegrations.filter(integration => {
+    const categoryMatch = selectedCategory === 'All' || integration.category === selectedCategory;
+    const notConnected = !connectedIntegrations.includes(integration.id);
+    return categoryMatch && notConnected;
+  });
+
+  const handleConnectIntegration = (integration: Integration) => {
+    // Here you would typically make an API call to connect the integration
+    console.log('Connecting integration:', integration);
+    // For demo purposes, we'll just show a success message
+  };
+
+  const handleRemoveIntegration = (serviceUid: string) => {
+    // Here you would typically make an API call to remove the integration
+    console.log('Removing integration:', serviceUid);
+  };
 
   return (
     <div>
+      {/* CRM Warning Banner */}
+      {!hasCrmIntegration && (
+        <div style={{
+          backgroundColor: currentTheme.warning + '20',
+          border: `1px solid ${currentTheme.warning}`,
+          borderRadius: '12px',
+          padding: '20px',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px'
+        }}>
+          <AlertCircle size={24} color={currentTheme.warning} />
+          <div>
+            <div style={{
+              color: currentTheme.warning,
+              fontSize: '16px',
+              fontWeight: '600',
+              marginBottom: '4px'
+            }}>
+              CRM Integration Required
+            </div>
+            <div style={{
+              color: currentTheme.textSecondary,
+              fontSize: '14px'
+            }}>
+              To ensure proper data synchronization, you must first connect a CRM system (PestPac, FieldRoutes, FieldWork, or BrioStack) before adding other integrations.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Active Integrations */}
       <div style={{
         backgroundColor: currentTheme.cardBg,
         borderRadius: '12px',
@@ -3880,114 +4171,130 @@ const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Or
           borderBottom: `1px solid ${currentTheme.border}`
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{
-              color: currentTheme.textPrimary,
-              margin: 0,
-              fontSize: '18px',
-              fontWeight: '600'
-            }}>
-              Active Integrations
-            </h3>
-            <button style={{
-              padding: '8px 16px',
-              backgroundColor: currentTheme.primary,
-              border: 'none',
-              borderRadius: '8px',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              <Plus size={16} />
-              Add Integration
-            </button>
+            <div>
+              <h3 style={{
+                color: currentTheme.textPrimary,
+                margin: 0,
+                fontSize: '18px',
+                fontWeight: '600'
+              }}>
+                Active Integrations
+              </h3>
+              <p style={{
+                color: currentTheme.textSecondary,
+                margin: '4px 0 0 0',
+                fontSize: '14px'
+              }}>
+                {organization.services?.length || 0} integrations connected
+              </p>
+            </div>
           </div>
         </div>
 
         <div style={{ padding: '16px 0' }}>
-          {organization.services?.map((service) => (
-            <div key={service.uid} style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '16px 24px',
-              borderBottom: `1px solid ${currentTheme.border}`
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  backgroundColor: currentTheme.primary + '20',
+          {organization.services && organization.services.length > 0 ? (
+            organization.services.map((service) => {
+              const integration = allIntegrations.find(i => i.id === service.type);
+              return (
+                <div key={service.uid} style={{
                   display: 'flex',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '20px'
+                  padding: '16px 24px',
+                  borderBottom: `1px solid ${currentTheme.border}`
                 }}>
-                  {serviceTypes.find(s => s.id === service.type)?.icon || '🔧'}
-                </div>
-                <div>
-                  <div style={{
-                    color: currentTheme.textPrimary,
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    marginBottom: '4px'
-                  }}>
-                    {service.name}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '12px',
+                      backgroundColor: currentTheme.primary + '20',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '20px'
+                    }}>
+                      {integration?.icon || '🔧'}
+                    </div>
+                    <div>
+                      <div style={{
+                        color: currentTheme.textPrimary,
+                        fontSize: '16px',
+                        fontWeight: '500',
+                        marginBottom: '4px'
+                      }}>
+                        {integration?.name || service.name || service.type}
+                      </div>
+                      <div style={{
+                        color: currentTheme.textSecondary,
+                        fontSize: '14px'
+                      }}>
+                        {integration?.category} • Last sync: {new Date(service.last_sync || Date.now()).toLocaleDateString()}
+                      </div>
+                    </div>
                   </div>
-                  <div style={{
-                    color: currentTheme.textSecondary,
-                    fontSize: '14px'
-                  }}>
-                    Last sync: {new Date(service.last_sync || '').toLocaleDateString()}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: service.status === 'active' ? currentTheme.success : currentTheme.danger
+                      }} />
+                      <span style={{
+                        color: currentTheme.textSecondary,
+                        fontSize: '14px',
+                        textTransform: 'capitalize'
+                      }}>
+                        {service.status || 'Active'}
+                      </span>
+                    </div>
+                    <button style={{
+                      padding: '6px 12px',
+                      backgroundColor: 'transparent',
+                      border: `1px solid ${currentTheme.border}`,
+                      borderRadius: '6px',
+                      color: currentTheme.textPrimary,
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}>
+                      Configure
+                    </button>
+                    <button 
+                      onClick={() => handleRemoveIntegration(service.uid)}
+                      style={{
+                        padding: '6px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        color: currentTheme.danger,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    backgroundColor: service.status === 'active' ? currentTheme.success : currentTheme.danger
-                  }} />
-                  <span style={{
-                    color: currentTheme.textSecondary,
-                    fontSize: '14px',
-                    textTransform: 'capitalize'
-                  }}>
-                    {service.status}
-                  </span>
-                </div>
-                <button style={{
-                  padding: '6px 12px',
-                  backgroundColor: 'transparent',
-                  border: `1px solid ${currentTheme.border}`,
-                  borderRadius: '6px',
-                  color: currentTheme.textPrimary,
-                  cursor: 'pointer',
-                  fontSize: '12px'
-                }}>
-                  Configure
-                </button>
-                <button style={{
-                  padding: '6px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  color: currentTheme.danger,
-                  cursor: 'pointer'
-                }}>
-                  <Trash2 size={16} />
-                </button>
-              </div>
+              );
+            })
+          ) : (
+            <div style={{
+              padding: '40px 24px',
+              textAlign: 'center',
+              color: currentTheme.textSecondary
+            }}>
+              <Globe size={48} style={{ marginBottom: '16px', opacity: 0.3 }} />
+              <p style={{ margin: 0, fontSize: '16px' }}>
+                No integrations connected yet
+              </p>
+              <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
+                Start by connecting a CRM system to sync your data
+              </p>
             </div>
-          ))}
+          )}
         </div>
       </div>
 
+      {/* Available Integrations */}
       <div style={{
         backgroundColor: currentTheme.cardBg,
         borderRadius: '12px',
@@ -3998,86 +4305,186 @@ const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Or
           padding: '24px',
           borderBottom: `1px solid ${currentTheme.border}`
         }}>
-          <h3 style={{
-            color: currentTheme.textPrimary,
-            margin: 0,
-            fontSize: '18px',
-            fontWeight: '600'
-          }}>
-            Available Integrations
-          </h3>
-          <p style={{
-            color: currentTheme.textSecondary,
-            margin: '8px 0 0 0',
-            fontSize: '14px'
-          }}>
-            Connect additional services to enhance your organization's data sync
-          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div>
+              <h3 style={{
+                color: currentTheme.textPrimary,
+                margin: 0,
+                fontSize: '18px',
+                fontWeight: '600'
+              }}>
+                Available Integrations
+              </h3>
+              <p style={{
+                color: currentTheme.textSecondary,
+                margin: '4px 0 0 0',
+                fontSize: '14px'
+              }}>
+                {filteredIntegrations.length} integrations available • Connect services to enhance your data sync
+              </p>
+            </div>
+          </div>
+
+          {/* Category Filter */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                style={{
+                  padding: '6px 12px',
+                  backgroundColor: selectedCategory === category ? currentTheme.primary : 'transparent',
+                  border: `1px solid ${selectedCategory === category ? currentTheme.primary : currentTheme.border}`,
+                  borderRadius: '20px',
+                  color: selectedCategory === category ? 'white' : currentTheme.textPrimary,
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
           gap: '16px',
           padding: '24px'
         }}>
-          {serviceTypes.filter(service => 
-            !organization.services?.some(s => s.type === service.id)
-          ).map((service) => (
-            <div key={service.id} style={{
-              padding: '20px',
-              border: `1px solid ${currentTheme.border}`,
-              borderRadius: '12px',
-              backgroundColor: currentTheme.background,
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '10px',
-                  backgroundColor: currentTheme.primary + '20',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '18px'
-                }}>
-                  {service.icon}
-                </div>
-                <div>
-                  <div style={{
-                    color: currentTheme.textPrimary,
-                    fontSize: '16px',
-                    fontWeight: '500'
-                  }}>
-                    {service.name}
+          {filteredIntegrations.length > 0 ? (
+            filteredIntegrations.map((integration) => {
+              const canConnect = integration.crmSystem || hasCrmIntegration;
+              return (
+                <div 
+                  key={integration.id} 
+                  style={{
+                    padding: '20px',
+                    border: `1px solid ${currentTheme.border}`,
+                    borderRadius: '12px',
+                    backgroundColor: currentTheme.background,
+                    opacity: canConnect ? 1 : 0.6,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    position: 'relative'
+                  }}
+                  onClick={() => {
+                    setSelectedIntegration(integration);
+                    setShowModal(true);
+                  }}
+                >
+                  {integration.crmSystem && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '12px',
+                      right: '12px',
+                      backgroundColor: currentTheme.primary,
+                      color: 'white',
+                      padding: '2px 8px',
+                      borderRadius: '8px',
+                      fontSize: '10px',
+                      fontWeight: '500'
+                    }}>
+                      CRM
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                    <div style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '12px',
+                      backgroundColor: currentTheme.primary + '20',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '20px'
+                    }}>
+                      {integration.icon}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{
+                        color: currentTheme.textPrimary,
+                        fontSize: '16px',
+                        fontWeight: '500',
+                        marginBottom: '4px'
+                      }}>
+                        {integration.name}
+                      </div>
+                      <div style={{
+                        display: 'inline-block',
+                        padding: '2px 6px',
+                        backgroundColor: currentTheme.primary + '20',
+                        color: currentTheme.primary,
+                        borderRadius: '8px',
+                        fontSize: '11px',
+                        fontWeight: '500'
+                      }}>
+                        {integration.category}
+                      </div>
+                    </div>
                   </div>
-                  <div style={{
+                  <p style={{
                     color: currentTheme.textSecondary,
-                    fontSize: '12px'
+                    fontSize: '13px',
+                    lineHeight: '1.4',
+                    margin: '0 0 16px 0'
                   }}>
-                    {service.category}
-                  </div>
+                    {integration.description}
+                  </p>
+                  <button 
+                    style={{
+                      width: '100%',
+                      padding: '10px 16px',
+                      backgroundColor: canConnect ? currentTheme.primary : currentTheme.border,
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: canConnect ? 'white' : currentTheme.textSecondary,
+                      cursor: canConnect ? 'pointer' : 'not-allowed',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                    disabled={!canConnect}
+                  >
+                    {!canConnect && !integration.crmSystem && <AlertCircle size={16} />}
+                    Connect
+                  </button>
                 </div>
-              </div>
-              <button style={{
-                width: '100%',
-                padding: '8px 16px',
-                backgroundColor: currentTheme.primary,
-                border: 'none',
-                borderRadius: '8px',
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}>
-                Connect
-              </button>
+              );
+            })
+          ) : (
+            <div style={{
+              gridColumn: '1 / -1',
+              padding: '40px',
+              textAlign: 'center',
+              color: currentTheme.textSecondary
+            }}>
+              <Filter size={48} style={{ marginBottom: '16px', opacity: 0.3 }} />
+              <p style={{ margin: 0, fontSize: '16px' }}>
+                No integrations found for "{selectedCategory}"
+              </p>
+              <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
+                Try selecting a different category
+              </p>
             </div>
-          ))}
+          )}
         </div>
       </div>
+
+      {/* Integration Modal */}
+      <IntegrationModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        integration={selectedIntegration}
+        onConnect={handleConnectIntegration}
+        hasCrmIntegration={hasCrmIntegration}
+      />
     </div>
   );
 };
