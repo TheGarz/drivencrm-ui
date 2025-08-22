@@ -18,7 +18,7 @@ const AppContent = () => {
   const handleForgotPassword = async (email: string) => {
     // Simulate API call for password reset
     await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log('Password reset email sent to:', email);
+    // Password reset email sent
     setResetEmail(email); // Store email for later use
     // In a real app, this would make an API call to send the reset email
   };
@@ -26,38 +26,34 @@ const AppContent = () => {
   const handleVerifyToken = async (token: string) => {
     // Simulate API call for token verification
     await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log('Token verified:', token);
+    // Token verified successfully
     // In a real app, this would verify the token with your backend
     // and then redirect to password reset page
     setCurrentView('reset-password');
   };
 
-  const handleResetPassword = async (passwords: { password: string; confirmPassword: string }) => {
+  const handleResetPassword = async (_passwords: { password: string; confirmPassword: string }) => {
     // Simulate API call for password reset
     await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log('Password reset successful for:', resetEmail);
+    // Password reset successful
     // In a real app, this would send the new password to your backend
     // After successful reset, the success screen will show and then user can go back to login
   };
 
   const handleLogin = async (credentials: { email: string; password: string; rememberMe?: boolean }) => {
     // First verify credentials
-    try {
-      // Simulate credential verification (without completing login)
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Check if credentials are valid for any demo user
-      const validEmails = ['admin@driven.com', 'owner@demo.com', 'manager@demo.com', 'tech@demo.com', 'demo@driven.com'];
-      
-      if (validEmails.includes(credentials.email) && credentials.password === 'demo123') {
-        // All demo users have 2FA enabled for testing, show 2FA screen
-        setPendingAuth(credentials);
-        setCurrentView('2fa');
-      } else {
-        throw new Error('Invalid email or password');
-      }
-    } catch (error) {
-      throw error;
+    // Simulate credential verification (without completing login)
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Check if credentials are valid for any demo user
+    const validEmails = ['admin@driven.com', 'owner@demo.com', 'manager@demo.com', 'tech@demo.com', 'demo@driven.com'];
+    
+    if (validEmails.includes(credentials.email) && credentials.password === 'demo123') {
+      // All demo users have 2FA enabled for testing, show 2FA screen
+      setPendingAuth(credentials);
+      setCurrentView('2fa');
+    } else {
+      throw new Error('Invalid email or password');
     }
   };
 
@@ -81,7 +77,7 @@ const AppContent = () => {
   const handleResendTwoFactorCode = async () => {
     // Simulate resending 2FA code
     await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('2FA code resent to:', pendingAuth?.email);
+    // 2FA code resent
   };
 
   const handleBackFrom2FA = () => {

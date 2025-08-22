@@ -15,10 +15,35 @@ import {
   Plus
 } from 'lucide-react';
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: 'Active' | 'Inactive';
+  lastLogin: string;
+  connectedCrmUser: string | null;
+  memberSince?: string;
+  closedOn?: string;
+}
+
+interface CrmUser {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface Branch {
+  id: number;
+  name: string;
+  address: string;
+  active: boolean;
+}
+
 interface UserManagementProps {
-  user: any;
+  user: User;
   onBack: () => void;
-  onUpdate: (userData: any) => void;
+  onUpdate: (userData: Partial<User>) => void;
 }
 
 const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate }) => {
@@ -62,17 +87,17 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
 
   const handleSaveUser = () => {
     onUpdate(editUserData);
-    console.log('Saving user:', editUserData);
+    // Saving user
   };
 
-  const handleAttachCrmUser = (crmUser: any) => {
+  const handleAttachCrmUser = (crmUser: CrmUser) => {
     setAttachedCrmUser(crmUser);
-    console.log('Attaching CRM user:', crmUser);
+    // Attaching CRM user
   };
 
-  const handleAssignBranch = (branch: any) => {
+  const handleAssignBranch = (branch: Branch) => {
     setAssignedBranch(branch);
-    console.log('Assigning branch:', branch);
+    // Assigning branch
   };
 
   const sections = [

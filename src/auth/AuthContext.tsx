@@ -199,8 +199,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         } else {
           throw new Error('Invalid email or password');
         }
-    } catch (error) {
-      throw error;
     } finally {
       setIsLoading(false);
     }

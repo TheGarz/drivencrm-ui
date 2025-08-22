@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTheme } from '../theme';
 import { useAuth } from '../auth/AuthContext';
 import { ThemeSelector } from './ThemeSelector';
@@ -10,22 +10,12 @@ import {
   BarChart3, 
   Users, 
   Building2,
-  Search,
-  ArrowUpRight,
   Settings,
   LogOut,
   ChevronDown,
-  Plus,
-  Database,
-  Shield,
-  Activity,
   CreditCard,
-  FileText,
-  Globe,
   Palette,
-  UserCheck,
-  Building,
-  Zap
+  UserCheck
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
@@ -121,7 +111,7 @@ return;
     // 1. Save current admin session
     // 2. Create new session as the organization
     // 3. Redirect to the organization's dashboard view
-    console.log(`Logging in as organization: ${organizationName} (ID: ${organizationId})`);
+    // Logging in as organization
     
     // For now, show a confirmation
     if (window.confirm(`Login as "${organizationName}"?\n\nThis will switch your view to see the system as this organization.`)) {
@@ -130,226 +120,6 @@ return;
     }
   };
 
-  // Components
-  const ProfileDropdown: React.FC = () => (
-    <div className="profile-dropdown" style={{ position: 'relative' }}>
-      <button 
-        onClick={() => setIsProfileOpen(!isProfileOpen)}
-        style={{ 
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '8px',
-          borderRadius: '16px',
-          backgroundColor: isProfileOpen ? `${currentTheme.primary}33` : 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease'
-        }}
-        className="profile-button"
-      >
-        <div 
-          style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '12px',
-            backgroundColor: currentTheme.primary,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '14px',
-            transition: 'transform 0.3s ease'
-          }}
-          className="profile-avatar"
-        >
-          {user?.avatar || user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
-        </div>
-        <div style={{ textAlign: 'left', display: window.innerWidth >= 1024 ? 'block' : 'none' }}>
-          <p style={{ color: currentTheme.textPrimary, fontWeight: '600', fontSize: '14px', margin: 0 }}>
-            {user?.name}
-          </p>
-          <p style={{ color: currentTheme.textSecondary, fontSize: '12px', margin: 0 }}>
-            {user?.role}
-          </p>
-        </div>
-        <ChevronDown 
-          style={{ 
-            color: currentTheme.textSecondary, 
-            width: '16px', 
-            height: '16px',
-            transform: isProfileOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.3s ease'
-          }} 
-        />
-      </button>
-      
-      {isProfileOpen && (
-        <div 
-          style={{ 
-            position: 'absolute',
-            right: 0,
-            top: '100%',
-            marginTop: '8px',
-            width: '320px',
-            backgroundColor: currentTheme.cardBg,
-            border: `2px solid ${currentTheme.border}`,
-            borderRadius: '16px',
-            padding: '24px',
-            zIndex: 50,
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            animation: 'fadeIn 0.3s ease-out'
-          }}
-        >
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '16px', 
-            marginBottom: '24px', 
-            paddingBottom: '16px',
-            borderBottom: `1px solid ${currentTheme.border}`
-          }}>
-            <div 
-              style={{
-                width: '64px',
-                height: '64px',
-                borderRadius: '16px',
-                backgroundColor: currentTheme.primary,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '20px'
-              }}
-            >
-              {user?.avatar || user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
-            </div>
-            <div style={{ flex: 1 }}>
-              <h3 style={{ color: currentTheme.textPrimary, fontWeight: 'bold', fontSize: '18px', margin: '0 0 4px 0' }}>
-                {user?.name}
-              </h3>
-              <p style={{ color: currentTheme.textSecondary, fontSize: '14px', margin: '0 0 4px 0' }}>{user?.role}</p>
-              <p style={{ color: currentTheme.textSecondary, fontSize: '12px', margin: '0 0 8px 0' }}>{user?.email}</p>
-              <span 
-                style={{
-                  display: 'inline-block',
-                  padding: '4px 8px',
-                  borderRadius: '9999px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  backgroundColor: `${currentTheme.primary}33`,
-                  color: currentTheme.primary
-                }}
-              >
-                Platform Admin
-              </span>
-            </div>
-          </div>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <button 
-              onClick={() => {
-                handleToggleTheme();
-                setIsProfileOpen(false);
-              }}
-              style={{ 
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px',
-                borderRadius: '12px',
-                border: 'none',
-                backgroundColor: `${currentTheme.primary}1A`,
-                color: currentTheme.textPrimary,
-                cursor: 'pointer',
-                transition: 'transform 0.3s ease'
-              }}
-              className="theme-toggle-btn"
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {theme === 'light' ? (
-                  <Moon style={{ color: currentTheme.primary, width: '20px', height: '20px' }} />
-                ) : (
-                  <Sun style={{ color: '#F59E0B', width: '20px', height: '20px' }} />
-                )}
-                <span style={{ fontWeight: '500' }}>
-                  Switch to {theme === 'light' ? 'Dark Theme' : 'Light Theme'}
-                </span>
-              </div>
-            </button>
-            
-            <button 
-              onClick={() => {
-                setIsThemeSelectorOpen(true);
-                setIsProfileOpen(false);
-              }}
-              style={{ 
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px',
-                borderRadius: '12px',
-                border: 'none',
-                backgroundColor: `${currentTheme.primary}1A`,
-                color: currentTheme.textPrimary,
-                cursor: 'pointer',
-                transition: 'transform 0.3s ease'
-              }}
-              className="theme-selector-btn"
-            >
-              <Palette style={{ color: currentTheme.primary, width: '20px', height: '20px' }} />
-              <span style={{ fontWeight: '500' }}>Choose Theme</span>
-            </button>
-            
-            <button 
-              style={{ 
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px',
-                borderRadius: '12px',
-                border: 'none',
-                backgroundColor: `${currentTheme.primary}1A`,
-                color: currentTheme.textPrimary,
-                cursor: 'pointer',
-                transition: 'transform 0.3s ease'
-              }}
-              className="edit-profile-btn"
-            >
-              <Settings style={{ color: currentTheme.primary, width: '20px', height: '20px' }} />
-              <span style={{ fontWeight: '500' }}>Edit Profile</span>
-            </button>
-            
-            <button 
-              onClick={handleLogout}
-              style={{ 
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px',
-                borderRadius: '12px',
-                border: 'none',
-                backgroundColor: '#FEF2F2',
-                color: currentTheme.danger,
-                cursor: 'pointer',
-                transition: 'transform 0.3s ease'
-              }}
-              className="logout-btn"
-            >
-              <LogOut style={{ width: '20px', height: '20px' }} />
-              <span style={{ fontWeight: '500' }}>Sign Out</span>
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 
   // Render main content based on current view
   const renderMainContent = () => {

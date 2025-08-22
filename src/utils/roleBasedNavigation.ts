@@ -10,10 +10,7 @@ import {
   FileText,
   CreditCard,
   Phone,
-  Navigation,
-  Wrench,
-  Shield,
-  ClipboardList
+  Wrench
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -48,15 +45,15 @@ export const rolePermissions: Record<UserRole, string[]> = {
   'THIRD_PARTY': ['dashboard', 'integrations', 'settings'],
   'OWNER': ['dashboard', 'analytics', 'integrations', 'metrics', 'users', 'reviews', 'settings', 'billing'],
   'ADMIN': ['dashboard', 'analytics', 'integrations', 'metrics', 'users', 'reviews', 'settings'],
-  'EXECUTIVE_BRANCH_MANAGER': ['dashboard', 'analytics', 'metrics', 'users', 'reviews', 'branch_management'],
+  'EXECUTIVE_BRANCH_MANAGER': ['dashboard', 'analytics', 'metrics', 'users', 'reviews', 'branchManagement'],
   'BRANCH_MANAGER': ['dashboard', 'analytics', 'metrics', 'users', 'scheduling', 'reports'],
-  'TEAM_CAPTAIN': ['dashboard', 'team_metrics', 'scheduling', 'users'],
-  'CSR_UNIT_LEADER': ['dashboard', 'csr_metrics', 'scheduling', 'customer_service'],
-  'CSR_MEMBER': ['dashboard', 'customer_service', 'scheduling'],
-  'SALES_UNIT_LEADER': ['dashboard', 'sales_metrics', 'leads', 'sales_reports'],
-  'SALES_MEMBER': ['dashboard', 'leads', 'sales_pipeline'],
-  'TECH_UNIT_LEADER': ['dashboard', 'tech_metrics', 'scheduling', 'service_reports'],
-  'TECH_MEMBER': ['dashboard', 'scheduling', 'service_tickets'],
+  'TEAM_CAPTAIN': ['dashboard', 'teamMetrics', 'scheduling', 'users'],
+  'CSR_UNIT_LEADER': ['dashboard', 'csrMetrics', 'scheduling', 'customerService'],
+  'CSR_MEMBER': ['dashboard', 'customerService', 'scheduling'],
+  'SALES_UNIT_LEADER': ['dashboard', 'salesMetrics', 'leads', 'salesReports'],
+  'SALES_MEMBER': ['dashboard', 'leads', 'salesPipeline'],
+  'TECH_UNIT_LEADER': ['dashboard', 'techMetrics', 'scheduling', 'serviceReports'],
+  'TECH_MEMBER': ['dashboard', 'scheduling', 'serviceTickets'],
   'GUEST': ['dashboard']
 };
 
@@ -73,20 +70,20 @@ const allNavigationItems: Record<string, NavigationItem> = {
   // Role-specific items
   billing: { id: 'billing', icon: CreditCard, text: 'Billing', description: 'Subscription & Payments' },
   scheduling: { id: 'scheduling', icon: Calendar, text: 'Scheduling', description: 'Appointments & Routes' },
-  customer_service: { id: 'customer_service', icon: Phone, text: 'Customer Service', description: 'Support & Tickets' },
+  customerService: { id: 'customerService', icon: Phone, text: 'Customer Service', description: 'Support & Tickets' },
   leads: { id: 'leads', icon: UserCheck, text: 'Leads', description: 'Sales Pipeline Management' },
-  sales_pipeline: { id: 'sales_pipeline', icon: UserCheck, text: 'Sales Pipeline', description: 'Lead Management' },
-  service_tickets: { id: 'service_tickets', icon: Wrench, text: 'Service Tickets', description: 'Work Orders & Tasks' },
+  salesPipeline: { id: 'salesPipeline', icon: UserCheck, text: 'Sales Pipeline', description: 'Lead Management' },
+  serviceTickets: { id: 'serviceTickets', icon: Wrench, text: 'Service Tickets', description: 'Work Orders & Tasks' },
   reports: { id: 'reports', icon: FileText, text: 'Reports', description: 'Performance Reports' },
   
   // Specialized metrics
-  team_metrics: { id: 'team_metrics', icon: Gauge, text: 'Team Metrics', description: 'Team Performance' },
-  csr_metrics: { id: 'csr_metrics', icon: Gauge, text: 'CSR Metrics', description: 'Customer Service Analytics' },
-  sales_metrics: { id: 'sales_metrics', icon: Gauge, text: 'Sales Metrics', description: 'Sales Performance' },
-  tech_metrics: { id: 'tech_metrics', icon: Gauge, text: 'Tech Metrics', description: 'Service Metrics' },
-  sales_reports: { id: 'sales_reports', icon: FileText, text: 'Sales Reports', description: 'Sales Analytics' },
-  service_reports: { id: 'service_reports', icon: FileText, text: 'Service Reports', description: 'Service Analytics' },
-  branch_management: { id: 'branch_management', icon: Users, text: 'Branch Management', description: 'Multi-location Management' }
+  teamMetrics: { id: 'teamMetrics', icon: Gauge, text: 'Team Metrics', description: 'Team Performance' },
+  csrMetrics: { id: 'csrMetrics', icon: Gauge, text: 'CSR Metrics', description: 'Customer Service Analytics' },
+  salesMetrics: { id: 'salesMetrics', icon: Gauge, text: 'Sales Metrics', description: 'Sales Performance' },
+  techMetrics: { id: 'techMetrics', icon: Gauge, text: 'Tech Metrics', description: 'Service Metrics' },
+  salesReports: { id: 'salesReports', icon: FileText, text: 'Sales Reports', description: 'Sales Analytics' },
+  serviceReports: { id: 'serviceReports', icon: FileText, text: 'Service Reports', description: 'Service Analytics' },
+  branchManagement: { id: 'branchManagement', icon: Users, text: 'Branch Management', description: 'Multi-location Management' }
 };
 
 // Get navigation items based on user role

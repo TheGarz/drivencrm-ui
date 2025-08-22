@@ -273,7 +273,7 @@ return null;
           </button>
           <button
             onClick={() => {
-              console.log('Custom theme created:', customTheme);
+              console.warn('Custom theme created:', customTheme);
               alert('Custom theme saved! (This would integrate with theme system)');
               onClose();
             }}

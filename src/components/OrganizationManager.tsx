@@ -34,19 +34,42 @@ import {
 } from 'lucide-react';
 
 // Types
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: 'Active' | 'Inactive';
+  lastLogin: string;
+  connectedCrmUser: string | null;
+  memberSince?: string;
+  closedOn?: string;
+}
+
+// eslint-disable-next-line camelcase
 interface Organization {
   id: number;
   name: string;
   active: boolean;
+  // eslint-disable-next-line camelcase
   sync_limit: number;
+  // eslint-disable-next-line camelcase
   pay_period: string;
+  // eslint-disable-next-line camelcase
   pay_start: string;
+  // eslint-disable-next-line camelcase
   created_at: string;
+  // eslint-disable-next-line camelcase
   last_sync: string;
+  // eslint-disable-next-line camelcase
   total_users: number;
+  // eslint-disable-next-line camelcase
   total_branches: number;
+  // eslint-disable-next-line camelcase
   monthly_revenue: number;
+  // eslint-disable-next-line camelcase
   integration_count: number;
+  // eslint-disable-next-line camelcase
   app_config?: AppConfig;
   services?: ServiceResource[];
 }
@@ -166,7 +189,7 @@ const GeneralTab: React.FC<{ organization: Organization; onUpdate: (org: Organiz
     setShowDeactivateModal(false);
   };
 
-  const renderEditableField = (field: string, label: string, value: any, type: string = 'text') => (
+  const renderEditableField = (field: string, label: string, value: string | number | boolean, type: string = 'text') => (
     <div style={{
       display: 'flex',
       justifyContent: 'space-between',
@@ -199,7 +222,7 @@ const GeneralTab: React.FC<{ organization: Organization; onUpdate: (org: Organiz
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             {type === 'select' ? (
               <select
-                value={value}
+                value={String(value)}
                 onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
                 style={{
                   padding: '8px 12px',
@@ -224,7 +247,7 @@ const GeneralTab: React.FC<{ organization: Organization; onUpdate: (org: Organiz
             ) : (
               <input
                 type={type}
-                value={value}
+                value={String(value)}
                 min={field === 'sync_limit' ? 0 : undefined}
                 max={field === 'sync_limit' ? 24 : undefined}
                 onChange={(e) => {
@@ -282,11 +305,11 @@ const GeneralTab: React.FC<{ organization: Organization; onUpdate: (org: Organiz
             fontWeight: '500'
           }}>
             {field === 'pay_period' ? 
-              value.startsWith('PERIOD_') ? 
-                value.replace('PERIOD_', '').replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) :
-                value.toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
+              String(value).startsWith('PERIOD_') ? 
+                String(value).replace('PERIOD_', '').replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) :
+                String(value).toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
               : field === 'pay_start' ? 
-                new Date(value).toLocaleDateString('en-US', {
+                new Date(String(value)).toLocaleDateString('en-US', {
                   day: '2-digit',
                   month: '2-digit', 
                   year: 'numeric'
@@ -518,7 +541,7 @@ const UsersTab: React.FC<{ organization: Organization; onUpdate: (org: Organizat
   const [filterRole, setFilterRole] = useState('all');
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showUserManagement, setShowUserManagement] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newUserData, setNewUserData] = useState({
     firstName: '',
     lastName: '',
@@ -566,7 +589,7 @@ const UsersTab: React.FC<{ organization: Organization; onUpdate: (org: Organizat
       // Add empty rows for user data entry
       ',,,,,,,',
       ',,,,,,,',
-      ',',,,,,,''
+      ',,,,,,'
     ].join('\n');
     
     // Create and download file
@@ -593,7 +616,7 @@ const UsersTab: React.FC<{ organization: Organization; onUpdate: (org: Organizat
         reader.onload = (e) => {
           const csv = e.target?.result as string;
           // Parse CSV and process users
-          console.log('CSV content:', csv);
+          // CSV content parsed
           // Here you would parse the CSV and add users to your system
           // For now, just show an alert
           alert('CSV file uploaded successfully! In production, this would import the users.');
@@ -620,7 +643,7 @@ const UsersTab: React.FC<{ organization: Organization; onUpdate: (org: Organizat
 
   const handleSaveUser = () => {
     // Here you would typically make an API call to save the new user
-    console.log('Adding new user:', newUserData);
+    // Adding new user
     // For now, we'll just close the modal
     handleCloseAddUserModal();
   };
@@ -632,7 +655,7 @@ const UsersTab: React.FC<{ organization: Organization; onUpdate: (org: Organizat
     }));
   };
 
-  const handleManageUser = (user: any) => {
+  const handleManageUser = (user: User) => {
     setSelectedUser(user);
     setShowUserManagement(true);
   };
@@ -642,14 +665,14 @@ const UsersTab: React.FC<{ organization: Organization; onUpdate: (org: Organizat
     setSelectedUser(null);
   };
 
-  const handleUpdateUser = (userData: any) => {
+  const handleUpdateUser = (userData: Partial<User>) => {
     // Here you would typically make an API call to update the user
-    console.log('Updating user:', selectedUser?.id, userData);
+    // Updating user
     // For now, we'll just close the management view
     handleCloseUserManagement();
   };
 
-  const mockUsers = [
+  const mockUsers: User[] = [
     { id: 1, name: 'John Smith', email: 'john@crosspest.com', role: 'Owner', status: 'Active', lastLogin: '2024-01-15', connectedCrmUser: 'Admin User', memberSince: '2024-08-18' },
     { id: 2, name: 'Sarah Johnson', email: 'sarah@crosspest.com', role: 'Branch Manager', status: 'Active', lastLogin: '2024-01-14', connectedCrmUser: 'Support Lead', memberSince: '2024-07-20' },
     { id: 3, name: 'Mike Wilson', email: 'mike@crosspest.com', role: 'Tech', status: 'Active', lastLogin: '2024-01-15', connectedCrmUser: null, memberSince: '2024-09-10' },
@@ -2324,7 +2347,7 @@ const OrganizationManager: React.FC<OrganizationManagerProps> = ({ onBack }) => 
   const handleUpdateOrganization = (updatedOrg: Organization) => {
     setOrganization(updatedOrg);
     // Here you would typically make an API call to save the changes
-    console.log('Updating organization:', updatedOrg);
+    // Updating organization
   };
 
   const ActiveTabComponent = tabs.find(tab => tab.id === activeTab)?.component || GeneralTab;
