@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Building2, Users, BarChart3, Plug, Wrench } from 'lucide-react';
+import { ArrowLeft, Building2, Users, BarChart3, Link, Shield, Activity } from 'lucide-react';
 import { useTheme } from '../../theme/ThemeContext';
 import type { Organization, OrganizationManagerProps } from './types';
 import { mockOrganization } from './mockData';
+import UserManagement from '../UserManagement';
+import AddNewUser from '../AddNewUser';
 
 // Import all tab components
 import GeneralTab from './tabs/GeneralTab';
@@ -14,17 +16,18 @@ import CustomRulesTab from './tabs/CustomRulesTab';
 
 const OrganizationManager: React.FC<OrganizationManagerProps> = ({ onBack }) => {
   const { currentTheme } = useTheme();
-  const [activeTab, setActiveTab] = useState('general');
   const [organization, setOrganization] = useState<Organization>(mockOrganization);
-  const [showAddUser, setShowAddUser] = useState(false);
+  const [activeTab, setActiveTab] = useState('general');
+  const [loading, setLoading] = useState(false);
+  const [currentView, setCurrentView] = useState<'organization' | 'add-user'>('organization');
 
   const tabs = [
     { id: 'general', label: 'General', icon: Building2, component: GeneralTab },
     { id: 'users', label: 'Users', icon: Users, component: UsersTab },
-    { id: 'metrics', label: 'Metrics', icon: BarChart3, component: MetricsTab },
-    { id: 'integrations', label: 'Integrations', icon: Plug, component: IntegrationsTab },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3, component: AnalyticsTab },
-    { id: 'rules', label: 'Custom Rules', icon: Wrench, component: CustomRulesTab }
+    { id: 'metrics', label: 'Metrics', icon: Activity, component: MetricsTab },
+    { id: 'integrations', label: 'Integrations', icon: Link, component: IntegrationsTab },
+    { id: 'custom-rules', label: 'Custom Rules', icon: Shield, component: CustomRulesTab },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3, component: AnalyticsTab }
   ];
 
   const handleUpdateOrganization = (updatedOrg: Organization) => {
@@ -33,7 +36,41 @@ const OrganizationManager: React.FC<OrganizationManagerProps> = ({ onBack }) => 
     console.log('Organization updated:', updatedOrg);
   };
 
-  const ActiveTabComponent = tabs.find(tab => tab.id === activeTab)?.component;
+  const handleShowAddUser = () => {
+    setCurrentView('add-user');
+  };
+
+  const handleBackToOrganization = () => {
+    setCurrentView('organization');
+  };
+
+  const handleSaveNewUser = (userData: any) => {
+    // Here you would typically make an API call to save the new user
+    // For now, just go back to the organization view
+    console.log('Saving new user with data:', userData);
+    setCurrentView('organization');
+    setActiveTab('users'); // Switch back to users tab
+    // In a real app, you'd also refresh the user list or add the new user to the state
+  };
+
+  const renderTabContent = () => {
+    if (activeTab === 'users') {
+      return <UsersTab organization={organization} onUpdate={handleUpdateOrganization} onShowAddUser={handleShowAddUser} />;
+    }
+    
+    const ActiveTabComponent = tabs.find(tab => tab.id === activeTab)?.component || GeneralTab;
+    return <ActiveTabComponent organization={organization} onUpdate={handleUpdateOrganization} />;
+  };
+
+  // If showing add user view, render that instead
+  if (currentView === 'add-user') {
+    return (
+      <AddNewUser 
+        onBack={handleBackToOrganization} 
+        onSave={handleSaveNewUser} 
+      />
+    );
+  }
 
   return (
     <div style={{
@@ -186,60 +223,9 @@ const OrganizationManager: React.FC<OrganizationManagerProps> = ({ onBack }) => 
 
         {/* Tab Content */}
         <div style={{ padding: '32px' }}>
-          {ActiveTabComponent && (
-            <ActiveTabComponent
-              organization={organization}
-              onUpdate={handleUpdateOrganization}
-              {...(activeTab === 'users' && { onShowAddUser: () => setShowAddUser(true) })}
-            />
-          )}
+          {renderTabContent()}
         </div>
       </div>
-
-      {/* Add User Modal (placeholder for now) */}
-      {showAddUser && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: currentTheme.cardBg,
-            borderRadius: '12px',
-            border: `1px solid ${currentTheme.border}`,
-            padding: '32px',
-            maxWidth: '500px',
-            width: '90%'
-          }}>
-            <h2 style={{ color: currentTheme.textPrimary, marginBottom: '24px' }}>Add New User</h2>
-            <p style={{ color: currentTheme.textSecondary, marginBottom: '24px' }}>
-              User management functionality would go here.
-            </p>
-            <button
-              onClick={() => setShowAddUser(false)}
-              style={{
-                padding: '10px 20px',
-                backgroundColor: currentTheme.primary,
-                border: 'none',
-                borderRadius: '8px',
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

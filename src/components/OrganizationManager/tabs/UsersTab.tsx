@@ -121,6 +121,10 @@ const UsersTab: React.FC<{ organization: Organization; onUpdate: (org: Organizat
     { id: 15, name: 'Christopher Lee', email: 'chris@crosspest.com', role: 'Tech', status: 'Active', lastLogin: '2024-01-15', connectedCrmUser: 'Chris Lee', memberSince: '2024-11-12' }
   ];
 
+  const handleLoadMoreUsers = () => {
+    setDisplayedUsers(prev => prev + 10);
+  };
+
   // Filter users based on search and role
   const filteredUsers = mockUsers.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -131,11 +135,6 @@ const UsersTab: React.FC<{ organization: Organization; onUpdate: (org: Organizat
 
   // Get visible users based on display count
   const visibleUsers = filteredUsers.slice(0, displayedUsers);
-
-  // Load more handler
-  const handleLoadMoreUsers = () => {
-    setDisplayedUsers(prev => prev + 10);
-  };
 
   // Reset pagination when search or filter changes
   React.useEffect(() => {
