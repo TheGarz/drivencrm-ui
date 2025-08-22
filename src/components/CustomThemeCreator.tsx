@@ -29,7 +29,9 @@ export const CustomThemeCreator = ({ isOpen, onClose }: CustomThemeCreatorProps)
   });
   const [previewMode, setPreviewMode] = useState(false);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   const updateColor = (key: keyof Theme, value: string) => {
     setCustomTheme(prev => ({ ...prev, [key]: value }));

@@ -18,6 +18,8 @@ export const rgbToHex = (r: number, g: number, b: number): string => {
 
 export const addOpacity = (color: string, opacity: number): string => {
   const rgb = hexToRgb(color);
-  if (!rgb) return color;
+  if (!rgb) {
+return color;
+}
   return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
 };

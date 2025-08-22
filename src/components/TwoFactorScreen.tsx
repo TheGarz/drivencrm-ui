@@ -53,13 +53,17 @@ export const TwoFactorScreen = ({ onBack, onVerify, onResendCode, userEmail }: T
 
   const handleInputChange = (index: number, value: string) => {
     // Only allow digits
-    if (value !== '' && !/^\d$/.test(value)) return;
+    if (value !== '' && !/^\d$/.test(value)) {
+return;
+}
 
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
 
-    if (error) setError(''); // Clear error when user starts typing
+    if (error) {
+setError('');
+} // Clear error when user starts typing
 
     // Auto-focus next input
     if (value !== '' && index < 5) {
@@ -104,7 +108,9 @@ export const TwoFactorScreen = ({ onBack, onVerify, onResendCode, userEmail }: T
   };
 
   const handleVerifyCode = async (fullCode: string) => {
-    if (fullCode.length !== 6) return;
+    if (fullCode.length !== 6) {
+return;
+}
 
     setError('');
     setIsLoading(true);
@@ -258,7 +264,11 @@ export const TwoFactorScreen = ({ onBack, onVerify, onResendCode, userEmail }: T
               {code.map((digit, index) => (
                 <input
                   key={index}
-                  ref={(el) => (inputRefs.current[index] = el)}
+                  ref={(el) => {
+ if (el) {
+inputRefs.current[index] = el;
+} 
+}}
                   type="text"
                   inputMode="numeric"
                   maxLength={1}

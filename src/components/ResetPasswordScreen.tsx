@@ -50,7 +50,9 @@ export const ResetPasswordScreen = ({ onBack, onSubmit, email }: ResetPasswordSc
 
   const handleInputChange = (field: 'password' | 'confirmPassword') => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [field]: e.target.value }));
-    if (error) setError(''); // Clear error when user starts typing
+    if (error) {
+setError('');
+} // Clear error when user starts typing
   };
 
   // Success state after password reset

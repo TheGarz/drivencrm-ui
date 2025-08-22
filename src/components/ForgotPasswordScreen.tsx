@@ -35,12 +35,16 @@ export const ForgotPasswordScreen = ({ onBack, onSubmit, onVerifyToken }: Forgot
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
-    if (error) setError(''); // Clear error when user starts typing
+    if (error) {
+setError('');
+} // Clear error when user starts typing
   };
 
   const handleTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setToken(e.target.value);
-    if (tokenError) setTokenError(''); // Clear error when user starts typing
+    if (tokenError) {
+setTokenError('');
+} // Clear error when user starts typing
   };
 
   const handleTokenSubmit = async (e: React.FormEvent) => {

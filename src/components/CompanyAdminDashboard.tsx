@@ -94,7 +94,9 @@ const CompanyAdminDashboard: React.FC = () => {
 
   // Handle navigation
   const handleNavClick = (viewType: ViewType) => {
-    if (viewType === currentView) return;
+    if (viewType === currentView) {
+return;
+}
     
     setIsTransitioning(true);
     setActiveNavItem(viewType);

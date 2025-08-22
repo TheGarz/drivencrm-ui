@@ -82,13 +82,13 @@ interface TabProps {
 // Mock data
 const mockOrganization: Organization = {
   id: 1,
-  name: "Cross Pest Control",
+  name: 'Cross Pest Control',
   active: true,
   sync_limit: 0,
-  pay_period: "PERIOD_WEEKLY",
-  pay_start: "2023-01-01",
-  created_at: "2023-01-01T00:00:00Z",
-  last_sync: "2024-01-15T10:30:00Z",
+  pay_period: 'PERIOD_WEEKLY',
+  pay_start: '2023-01-01',
+  created_at: '2023-01-01T00:00:00Z',
+  last_sync: '2024-01-15T10:30:00Z',
   total_users: 47,
   total_branches: 3,
   monthly_revenue: 125000,
@@ -97,31 +97,31 @@ const mockOrganization: Organization = {
     version: 2,
     metrics: {
       branch: [
-        { type: "revenue" },
-        { type: "cancels" },
-        { type: "leads" }
+        { type: 'revenue' },
+        { type: 'cancels' },
+        { type: 'leads' }
       ],
       tech: [
-        { type: "completion" },
-        { type: "prodperhour" },
-        { type: "reviews" }
+        { type: 'completion' },
+        { type: 'prodperhour' },
+        { type: 'reviews' }
       ]
     }
   },
   services: [
     {
-      uid: "fieldroutes-001",
-      type: "FIELDROUTES",
-      name: "FieldRoutes CRM",
-      status: "active",
-      last_sync: "2024-01-15T10:30:00Z"
+      uid: 'fieldroutes-001',
+      type: 'FIELDROUTES',
+      name: 'FieldRoutes CRM',
+      status: 'active',
+      last_sync: '2024-01-15T10:30:00Z'
     },
     {
-      uid: "hubspot-001", 
-      type: "HUBSPOT",
-      name: "HubSpot Leads",
-      status: "active",
-      last_sync: "2024-01-15T09:45:00Z"
+      uid: 'hubspot-001', 
+      type: 'HUBSPOT',
+      name: 'HubSpot Leads',
+      status: 'active',
+      last_sync: '2024-01-15T09:45:00Z'
     }
   ]
 };
@@ -232,7 +232,7 @@ const GeneralTab: React.FC<{ organization: Organization; onUpdate: (org: Organiz
                   
                   // Specific validation for sync_limit field
                   if (field === 'sync_limit' && type === 'number') {
-                    newValue = Math.max(0, Math.min(24, newValue));
+                    newValue = Math.max(0, Math.min(24, Number(newValue)));
                   }
                   
                   setFormData({ ...formData, [field]: newValue });
@@ -2549,7 +2549,7 @@ const OrganizationManager: React.FC<OrganizationManagerProps> = ({ onBack }) => 
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = `0 8px 25px #8b5cf615`;
+              e.currentTarget.style.boxShadow = '0 8px 25px #8b5cf615';
               e.currentTarget.style.borderColor = '#8b5cf6' + '30';
             }}
             onMouseLeave={(e) => {

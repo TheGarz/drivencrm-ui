@@ -259,8 +259,8 @@ const DrivenPestControlDashboard: React.FC = () => {
               <h3 style={{ color: currentTheme.textPrimary, fontWeight: 'bold', fontSize: '18px', margin: '0 0 4px 0' }}>
                 {user?.name}
               </h3>
-              <p style={{ color: currentTheme.textSecondary, fontSize: '14px', margin: '0 0 4px 0' }}>{currentUser.role}</p>
-              <p style={{ color: currentTheme.textSecondary, fontSize: '12px', margin: '0 0 8px 0' }}>{currentUser.email}</p>
+              <p style={{ color: currentTheme.textSecondary, fontSize: '14px', margin: '0 0 4px 0' }}>{user?.role}</p>
+              <p style={{ color: currentTheme.textSecondary, fontSize: '12px', margin: '0 0 8px 0' }}>{user?.email}</p>
               <span 
                 style={{
                   display: 'inline-block',
@@ -272,7 +272,7 @@ const DrivenPestControlDashboard: React.FC = () => {
                   color: currentTheme.primary
                 }}
               >
-                {currentUser.plan} Plan
+                {user?.plan || 'Standard'} Plan
               </span>
             </div>
           </div>

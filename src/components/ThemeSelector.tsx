@@ -12,7 +12,9 @@ export const ThemeSelector = ({ isOpen, onClose }: ThemeSelectorProps) => {
   const { theme: currentTheme, setTheme, availableThemes } = useTheme();
   const [hoveredTheme, setHoveredTheme] = useState<ThemeKey | null>(null);
   
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   const handleThemeSelect = (themeKey: ThemeKey) => {
     setTheme(themeKey);
