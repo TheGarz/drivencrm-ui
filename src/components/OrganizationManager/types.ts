@@ -64,9 +64,11 @@ export interface ServiceResource {
   uid: string;
   type: string;
   name: string;
-  status: 'active' | 'inactive' | 'error';
+  status: 'active' | 'inactive' | 'error' | 'needs_setup';
   last_sync?: string;
   config?: Record<string, any>;
+  configured?: boolean;
+  config_status?: 'complete' | 'incomplete' | 'testing' | 'failed';
 }
 
 export interface TabProps {

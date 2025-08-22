@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Globe, AlertCircle, Trash2 } from 'lucide-react';
+import { Globe, AlertCircle, Trash2, Settings, CheckCircle, Clock, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '../../../../theme/ThemeContext';
 import type { Organization, Integration } from '../../types';
 import IntegrationModal from './IntegrationModal';
 import { allIntegrations, categories } from './constants';
+import { getIntegrationConfig } from './configDefinitions';
 
 const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Organization) => void }> = ({ organization, onUpdate }) => {
   const { currentTheme } = useTheme();
@@ -12,6 +13,8 @@ const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Or
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [integrationToDelete, setIntegrationToDelete] = useState<{uid: string, name: string} | null>(null);
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [selectedServiceForConfig, setSelectedServiceForConfig] = useState<any>(null);
 
   const hasCrmIntegration = organization.services?.some(service => 
     allIntegrations.find(integration => integration.id === service.type)?.crmSystem
@@ -31,9 +34,11 @@ const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Or
       uid: `${integration.id.toLowerCase()}-${Date.now()}`,
       type: integration.id,
       name: integration.name,
-      status: 'active' as const,
+      status: 'needs_setup' as const,
       last_sync: new Date().toISOString(),
-      config: {}
+      config: {},
+      configured: false,
+      config_status: 'incomplete' as const
     };
 
     // Add the integration to the organization's services
@@ -84,6 +89,59 @@ const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Or
   const handleCancelDelete = () => {
     setShowDeleteModal(false);
     setIntegrationToDelete(null);
+  };
+
+  const handleConfigureIntegration = (service: any) => {
+    setSelectedServiceForConfig(service);
+    setShowConfigModal(true);
+  };
+
+  const handleSaveConfig = (config: Record<string, any>) => {
+    if (!selectedServiceForConfig) return;
+
+    // Update the service with new configuration
+    const updatedServices = organization.services?.map(service => {
+      if (service.uid === selectedServiceForConfig.uid) {
+        return {
+          ...service,
+          config,
+          configured: true,
+          config_status: 'complete' as const,
+          status: 'active' as const
+        };
+      }
+      return service;
+    }) || [];
+
+    const updatedOrganization = {
+      ...organization,
+      services: updatedServices
+    };
+
+    onUpdate(updatedOrganization);
+    setShowConfigModal(false);
+    setSelectedServiceForConfig(null);
+  };
+
+  const getStatusColor = (service: any) => {
+    if (service.status === 'needs_setup') return currentTheme.warning;
+    if (service.status === 'active' && service.configured) return currentTheme.success;
+    if (service.status === 'error') return currentTheme.danger;
+    return currentTheme.textSecondary;
+  };
+
+  const getStatusText = (service: any) => {
+    if (service.status === 'needs_setup') return 'Needs Setup';
+    if (service.status === 'active' && service.configured) return 'Active';
+    if (service.status === 'error') return 'Error';
+    return 'Inactive';
+  };
+
+  const getStatusIcon = (service: any) => {
+    if (service.status === 'needs_setup') return <Clock size={16} />;
+    if (service.status === 'active' && service.configured) return <CheckCircle size={16} />;
+    if (service.status === 'error') return <AlertCircle size={16} />;
+    return <AlertCircle size={16} />;
   };
 
   return (
@@ -197,30 +255,35 @@ const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Or
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: '50%',
-                        backgroundColor: service.status === 'active' ? currentTheme.success : currentTheme.danger
-                      }} />
+                      <div style={{ color: getStatusColor(service) }}>
+                        {getStatusIcon(service)}
+                      </div>
                       <span style={{
-                        color: currentTheme.textSecondary,
+                        color: getStatusColor(service),
                         fontSize: '14px',
-                        textTransform: 'capitalize'
+                        fontWeight: '500'
                       }}>
-                        {service.status || 'Active'}
+                        {getStatusText(service)}
                       </span>
                     </div>
-                    <button style={{
-                      padding: '6px 12px',
-                      backgroundColor: 'transparent',
-                      border: `1px solid ${currentTheme.border}`,
-                      borderRadius: '6px',
-                      color: currentTheme.textPrimary,
-                      cursor: 'pointer',
-                      fontSize: '12px'
-                    }}>
-                      Configure
+                    <button 
+                      onClick={() => handleConfigureIntegration(service)}
+                      style={{
+                        padding: '6px 12px',
+                        backgroundColor: service.status === 'needs_setup' ? currentTheme.warning : 'transparent',
+                        border: `1px solid ${service.status === 'needs_setup' ? currentTheme.warning : currentTheme.border}`,
+                        borderRadius: '6px',
+                        color: service.status === 'needs_setup' ? 'white' : currentTheme.textPrimary,
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <Settings size={12} />
+                      {service.status === 'needs_setup' ? 'Set Up' : 'Configure'}
                     </button>
                     <button 
                       onClick={() => handleRemoveIntegration(service.uid)}
@@ -545,6 +608,41 @@ const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Or
         </div>
       )}
 
+      {/* Configuration Modal */}
+      {showConfigModal && selectedServiceForConfig && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: currentTheme.cardBg,
+            borderRadius: '12px',
+            border: `1px solid ${currentTheme.border}`,
+            padding: '32px',
+            maxWidth: '500px',
+            width: '90%',
+            maxHeight: '80vh',
+            overflowY: 'auto',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <ConfigurationForm
+              service={selectedServiceForConfig}
+              onSave={handleSaveConfig}
+              onCancel={() => setShowConfigModal(false)}
+              currentTheme={currentTheme}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Integration Modal */}
       <IntegrationModal
         isOpen={showModal}
@@ -556,6 +654,309 @@ const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Or
         onConnect={handleConnectIntegration}
         hasCrmIntegration={hasCrmIntegration}
       />
+    </div>
+  );
+};
+
+// Configuration Form Component
+const ConfigurationForm: React.FC<{
+  service: any;
+  onSave: (config: Record<string, any>) => void;
+  onCancel: () => void;
+  currentTheme: any;
+}> = ({ service, onSave, onCancel, currentTheme }) => {
+  const integrationConfig = getIntegrationConfig(service.type);
+  const [formData, setFormData] = useState<Record<string, any>>(service.config || {});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [fieldVisibility, setFieldVisibility] = useState<Record<string, boolean>>({});
+
+  const validateField = (field: any, value: string) => {
+    if (field.required && !value.trim()) {
+      return `${field.label} is required`;
+    }
+
+    if (field.validation?.pattern && value) {
+      const regex = new RegExp(field.validation.pattern);
+      if (!regex.test(value)) {
+        return field.validation.message || `Invalid ${field.label.toLowerCase()}`;
+      }
+    }
+
+    if (field.type === 'email' && value) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        return 'Invalid email address';
+      }
+    }
+
+    if (field.type === 'url' && value) {
+      try {
+        new URL(value);
+      } catch {
+        return 'Invalid URL format';
+      }
+    }
+
+    return '';
+  };
+
+  const handleFieldChange = (fieldKey: string, value: string) => {
+    setFormData(prev => ({ ...prev, [fieldKey]: value }));
+    
+    // Clear error for this field
+    if (errors[fieldKey]) {
+      setErrors(prev => ({ ...prev, [fieldKey]: '' }));
+    }
+  };
+
+  const toggleFieldVisibility = (fieldKey: string) => {
+    setFieldVisibility(prev => ({ ...prev, [fieldKey]: !prev[fieldKey] }));
+  };
+
+  const handleTestConnection = async () => {
+    setIsTestingConnection(true);
+    // Simulate connection test
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsTestingConnection(false);
+    alert('Connection test successful!');
+  };
+
+  const handleSubmit = () => {
+    const newErrors: Record<string, string> = {};
+    
+    // Validate all fields
+    integrationConfig.fields.forEach(field => {
+      const error = validateField(field, formData[field.key] || '');
+      if (error) {
+        newErrors[field.key] = error;
+      }
+    });
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    onSave(formData);
+  };
+
+  const renderField = (field: any) => {
+    const value = formData[field.key] || '';
+    const hasError = !!errors[field.key];
+    const isSensitiveField = field.type === 'password' || 
+                           field.key.toLowerCase().includes('password') || 
+                           field.key.toLowerCase().includes('api_key') || 
+                           field.key.toLowerCase().includes('secret') || 
+                           field.key.toLowerCase().includes('token');
+    const isVisible = fieldVisibility[field.key] || false;
+    const inputType = isSensitiveField && !isVisible ? 'password' : (field.type === 'password' ? 'text' : field.type);
+
+    return (
+      <div key={field.key} style={{ marginBottom: '20px' }}>
+        <label style={{
+          display: 'block',
+          color: currentTheme.textPrimary,
+          fontSize: '14px',
+          fontWeight: '500',
+          marginBottom: '6px'
+        }}>
+          {field.label}
+          {field.required && <span style={{ color: currentTheme.danger, marginLeft: '4px' }}>*</span>}
+        </label>
+        
+        {field.description && (
+          <p style={{
+            color: currentTheme.textSecondary,
+            fontSize: '12px',
+            margin: '0 0 8px 0',
+            lineHeight: '1.4'
+          }}>
+            {field.description}
+          </p>
+        )}
+
+        {field.type === 'select' ? (
+          <select
+            value={value}
+            onChange={(e) => handleFieldChange(field.key, e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 12px',
+              border: `1px solid ${hasError ? currentTheme.danger : currentTheme.border}`,
+              borderRadius: '8px',
+              backgroundColor: currentTheme.background,
+              color: currentTheme.textPrimary,
+              fontSize: '14px'
+            }}
+          >
+            <option value="">Select {field.label}</option>
+            {field.options?.map((option: any) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <div style={{ position: 'relative' }}>
+            <input
+              type={inputType}
+              value={value}
+              onChange={(e) => handleFieldChange(field.key, e.target.value)}
+              placeholder={field.placeholder}
+              style={{
+                width: '100%',
+                padding: isSensitiveField ? '10px 40px 10px 12px' : '10px 12px',
+                border: `1px solid ${hasError ? currentTheme.danger : currentTheme.border}`,
+                borderRadius: '8px',
+                backgroundColor: currentTheme.background,
+                color: currentTheme.textPrimary,
+                fontSize: '14px',
+                boxSizing: 'border-box'
+              }}
+            />
+            {isSensitiveField && (
+              <button
+                type="button"
+                onClick={() => toggleFieldVisibility(field.key)}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: currentTheme.textSecondary,
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '0'
+                }}
+                aria-label={isVisible ? 'Hide password' : 'Show password'}
+              >
+                {isVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            )}
+          </div>
+        )}
+
+        {hasError && (
+          <p style={{
+            color: currentTheme.danger,
+            fontSize: '12px',
+            margin: '4px 0 0 0'
+          }}>
+            {errors[field.key]}
+          </p>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        marginBottom: '24px'
+      }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          borderRadius: '12px',
+          backgroundColor: currentTheme.primary + '20',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <Settings size={24} style={{ color: currentTheme.primary }} />
+        </div>
+        <div>
+          <h3 style={{
+            color: currentTheme.textPrimary,
+            margin: '0 0 4px 0',
+            fontSize: '18px',
+            fontWeight: '600'
+          }}>
+            Configure {integrationConfig.name}
+          </h3>
+          <p style={{
+            color: currentTheme.textSecondary,
+            margin: 0,
+            fontSize: '14px'
+          }}>
+            {integrationConfig.description}
+          </p>
+        </div>
+      </div>
+
+      <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '24px' }}>
+        {integrationConfig.fields.map(renderField)}
+      </div>
+
+      <div style={{
+        display: 'flex',
+        gap: '12px',
+        justifyContent: 'space-between',
+        paddingTop: '20px',
+        borderTop: `1px solid ${currentTheme.border}`
+      }}>
+        <div>
+          {integrationConfig.testConnection && (
+            <button
+              onClick={handleTestConnection}
+              disabled={isTestingConnection}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: 'transparent',
+                border: `1px solid ${currentTheme.primary}`,
+                borderRadius: '8px',
+                color: currentTheme.primary,
+                cursor: isTestingConnection ? 'not-allowed' : 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                opacity: isTestingConnection ? 0.6 : 1
+              }}
+            >
+              {isTestingConnection ? 'Testing...' : 'Test Connection'}
+            </button>
+          )}
+        </div>
+        
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            onClick={onCancel}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: 'transparent',
+              border: `1px solid ${currentTheme.border}`,
+              borderRadius: '8px',
+              color: currentTheme.textPrimary,
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: currentTheme.primary,
+              border: 'none',
+              borderRadius: '8px',
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            Save Configuration
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
