@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Building2, User, Eye, EyeOff, Calendar, DollarSign } from 'lucide-react';
+import { ArrowLeft, Building2, Calendar } from 'lucide-react';
 import { useTheme } from '../theme/ThemeContext';
 
 interface OrganizationFormData {
@@ -10,16 +10,10 @@ interface OrganizationFormData {
   active: boolean;
 }
 
-interface OwnerUserData {
-  name: string;
-  email: string;
-  password: string;
-  role: string;
-}
 
 interface AddNewOrganizationProps {
   onBack: () => void;
-  onSave: (orgData: OrganizationFormData, ownerData?: OwnerUserData) => void;
+  onSave: (orgData: OrganizationFormData) => void;
 }
 
 const AddNewOrganization: React.FC<AddNewOrganizationProps> = ({ onBack, onSave }) => {
@@ -34,17 +28,7 @@ const AddNewOrganization: React.FC<AddNewOrganizationProps> = ({ onBack, onSave 
     active: true
   });
 
-  // Owner user form state
-  const [includeOwner, setIncludeOwner] = useState(false);
-  const [ownerData, setOwnerData] = useState<OwnerUserData>({
-    name: '',
-    email: '',
-    password: '',
-    role: 'Admin'
-  });
-
   // UI state
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -60,29 +44,6 @@ const AddNewOrganization: React.FC<AddNewOrganizationProps> = ({ onBack, onSave 
       newErrors.sync_limit = 'Sync limit cannot be negative';
     }
 
-    // Validate owner fields if included
-    if (includeOwner) {
-      if (!ownerData.name.trim()) {
-        newErrors.ownerName = 'Owner name is required';
-      }
-
-      if (!ownerData.email.trim()) {
-        newErrors.ownerEmail = 'Owner email is required';
-      } else if (!/\S+@\S+\.\S+/.test(ownerData.email)) {
-        newErrors.ownerEmail = 'Please enter a valid email address';
-      }
-
-      if (!ownerData.password.trim()) {
-        newErrors.ownerPassword = 'Owner password is required';
-      } else if (ownerData.password.length < 8) {
-        newErrors.ownerPassword = 'Password must be at least 8 characters';
-      }
-
-      if (!ownerData.role.trim()) {
-        newErrors.ownerRole = 'Owner role is required';
-      }
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -94,7 +55,7 @@ const AddNewOrganization: React.FC<AddNewOrganizationProps> = ({ onBack, onSave 
 
     setLoading(true);
     try {
-      await onSave(orgData, includeOwner ? ownerData : undefined);
+      await onSave(orgData);
     } catch (error) {
       console.error('Error saving organization:', error);
       setErrors({ general: 'Failed to save organization. Please try again.' });
@@ -182,7 +143,7 @@ const AddNewOrganization: React.FC<AddNewOrganizationProps> = ({ onBack, onSave 
             margin: '4px 0 0 0',
             fontSize: '16px'
           }}>
-            Create a new organization and optionally add an owner user
+            Create a new organization with basic configuration settings
           </p>
         </div>
       </div>
@@ -345,171 +306,6 @@ const AddNewOrganization: React.FC<AddNewOrganizationProps> = ({ onBack, onSave 
           </div>
         </div>
 
-        {/* Owner User Section */}
-        <div style={{ marginBottom: '32px' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '20px'
-          }}>
-            <h3 style={{
-              color: currentTheme.textPrimary,
-              margin: 0,
-              fontSize: '18px',
-              fontWeight: '600',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              <User size={20} style={{ color: currentTheme.primary }} />
-              Owner User (Optional)
-            </h3>
-            
-            <button
-              onClick={() => setIncludeOwner(!includeOwner)}
-              style={{
-                padding: '6px 12px',
-                backgroundColor: includeOwner ? currentTheme.primary : 'transparent',
-                color: includeOwner ? 'white' : currentTheme.primary,
-                border: `1px solid ${currentTheme.primary}`,
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              {includeOwner ? 'Remove Owner' : 'Add Owner'}
-            </button>
-          </div>
-
-          {includeOwner && (
-            <div style={{
-              backgroundColor: currentTheme.background + '40',
-              borderRadius: '8px',
-              padding: '20px',
-              border: `1px solid ${currentTheme.border}`
-            }}>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: '20px'
-              }}>
-                {/* Owner Name */}
-                <div>
-                  <label style={labelStyle}>
-                    Full Name <span style={{ color: currentTheme.danger }}>*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={ownerData.name}
-                    onChange={(e) => setOwnerData({ ...ownerData, name: e.target.value })}
-                    style={{
-                      ...inputStyle,
-                      borderColor: errors.ownerName ? currentTheme.danger : currentTheme.border
-                    }}
-                    placeholder="Enter owner's full name"
-                  />
-                  {errors.ownerName && (
-                    <div style={{ color: currentTheme.danger, fontSize: '12px', marginTop: '4px' }}>
-                      {errors.ownerName}
-                    </div>
-                  )}
-                </div>
-
-                {/* Owner Email */}
-                <div>
-                  <label style={labelStyle}>
-                    Email Address <span style={{ color: currentTheme.danger }}>*</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={ownerData.email}
-                    onChange={(e) => setOwnerData({ ...ownerData, email: e.target.value })}
-                    style={{
-                      ...inputStyle,
-                      borderColor: errors.ownerEmail ? currentTheme.danger : currentTheme.border
-                    }}
-                    placeholder="Enter owner's email"
-                  />
-                  {errors.ownerEmail && (
-                    <div style={{ color: currentTheme.danger, fontSize: '12px', marginTop: '4px' }}>
-                      {errors.ownerEmail}
-                    </div>
-                  )}
-                </div>
-
-                {/* Owner Password */}
-                <div>
-                  <label style={labelStyle}>
-                    Password <span style={{ color: currentTheme.danger }}>*</span>
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={ownerData.password}
-                      onChange={(e) => setOwnerData({ ...ownerData, password: e.target.value })}
-                      style={{
-                        ...inputStyle,
-                        borderColor: errors.ownerPassword ? currentTheme.danger : currentTheme.border,
-                        paddingRight: '40px'
-                      }}
-                      placeholder="Enter password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      style={{
-                        position: 'absolute',
-                        right: '8px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'none',
-                        border: 'none',
-                        color: currentTheme.textSecondary,
-                        cursor: 'pointer',
-                        padding: '4px'
-                      }}
-                    >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                  {errors.ownerPassword && (
-                    <div style={{ color: currentTheme.danger, fontSize: '12px', marginTop: '4px' }}>
-                      {errors.ownerPassword}
-                    </div>
-                  )}
-                </div>
-
-                {/* Owner Role */}
-                <div>
-                  <label style={labelStyle}>
-                    Role <span style={{ color: currentTheme.danger }}>*</span>
-                  </label>
-                  <select
-                    value={ownerData.role}
-                    onChange={(e) => setOwnerData({ ...ownerData, role: e.target.value })}
-                    style={{
-                      ...inputStyle,
-                      borderColor: errors.ownerRole ? currentTheme.danger : currentTheme.border,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <option value="Admin">Admin</option>
-                    <option value="Manager">Manager</option>
-                    <option value="Owner">Owner</option>
-                  </select>
-                  {errors.ownerRole && (
-                    <div style={{ color: currentTheme.danger, fontSize: '12px', marginTop: '4px' }}>
-                      {errors.ownerRole}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
 
         {/* Action Buttons */}
         <div style={{

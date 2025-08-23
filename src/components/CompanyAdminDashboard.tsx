@@ -149,15 +149,12 @@ return;
   };
 
   // Handle saving new organization
-  const handleSaveNewOrganization = async (orgData: any, ownerData?: any) => {
+  const handleSaveNewOrganization = async (orgData: any) => {
     try {
       // Log the data for debugging
       console.log('Creating new organization:', orgData);
-      if (ownerData) {
-        console.log('Creating owner user:', { ...ownerData, password: '[HIDDEN]' });
-      }
 
-      // Here you would typically make API calls to create the organization and user
+      // Here you would typically make API calls to create the organization
       // For now, we'll simulate the save process
       
       // Simulate API delay
@@ -168,7 +165,7 @@ return;
         id: mockOrganizations.length + 1,
         name: orgData.name,
         active: orgData.active,
-        userCount: ownerData ? 1 : 0,
+        userCount: 0,
         branchCount: 0,
         integrationCount: 0
       };
@@ -180,7 +177,7 @@ return;
       setCurrentView('organizations');
       
       // Show success message (in a real app, you might use a toast notification)
-      alert(`Organization "${orgData.name}" created successfully!${ownerData ? ` Owner user "${ownerData.name}" has been added.` : ''}`);
+      alert(`Organization "${orgData.name}" created successfully!`);
       
     } catch (error) {
       console.error('Error creating organization:', error);
