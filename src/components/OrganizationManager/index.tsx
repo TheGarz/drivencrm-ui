@@ -115,14 +115,27 @@ const OrganizationManager: React.FC<OrganizationManagerProps> = ({ onBack }) => 
           </button>
         )}
         <div>
-          <h1 style={{
-            color: currentTheme.textPrimary,
-            margin: 0,
-            fontSize: '32px',
-            fontWeight: '600'
-          }}>
-            {organization.name}
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <h1 style={{
+              color: currentTheme.textPrimary,
+              margin: 0,
+              fontSize: '32px',
+              fontWeight: '600'
+            }}>
+              {organization.name}
+            </h1>
+            <span style={{
+              backgroundColor: organization.active ? currentTheme.success + '20' : currentTheme.danger + '20',
+              color: organization.active ? currentTheme.success : currentTheme.danger,
+              padding: '4px 12px',
+              borderRadius: '20px',
+              fontSize: '14px',
+              fontWeight: '500',
+              border: `1px solid ${organization.active ? currentTheme.success + '40' : currentTheme.danger + '40'}`
+            }}>
+              {organization.active ? 'Active' : 'Inactive'}
+            </span>
+          </div>
           <p style={{
             color: currentTheme.textSecondary,
             margin: '4px 0 0 0',
@@ -141,12 +154,9 @@ const OrganizationManager: React.FC<OrganizationManagerProps> = ({ onBack }) => 
         marginBottom: '32px'
       }}>
         {[
-          { label: 'Status', value: organization.active ? 'Active' : 'Inactive', color: organization.active ? currentTheme.success : currentTheme.danger },
           { label: 'Total Users', value: organization.total_users || 0, color: currentTheme.primary },
           { label: 'Total Branches', value: organization.total_branches || 0, color: currentTheme.primary },
-          { label: 'Monthly Revenue', value: `$${(organization.monthly_revenue || 0).toLocaleString()}`, color: currentTheme.success },
-          { label: 'Integrations', value: organization.integration_count || 0, color: currentTheme.primary },
-          { label: 'Last Sync', value: new Date(organization.last_sync).toLocaleDateString(), color: currentTheme.textSecondary }
+          { label: 'Integrations', value: organization.integration_count || 0, color: currentTheme.primary }
         ].map((metric, index) => (
           <div key={index} style={{
             backgroundColor: currentTheme.cardBg,
