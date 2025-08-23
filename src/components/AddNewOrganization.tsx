@@ -5,7 +5,7 @@ import { useTheme } from '../theme/ThemeContext';
 interface OrganizationFormData {
   name: string;
   sync_limit: number;
-  pay_period: 'PERIOD_WEEKLY' | 'PERIOD_BIWEEKLY' | 'PERIOD_MONTHLY';
+  pay_period: 'DAY' | 'MONTH' | 'QUARTER' | 'HALF' | 'YEAR' | 'PERIOD_DAILY' | 'PERIOD_WEEKLY' | 'PERIOD_BIWEEKLY' | 'PERIOD_SEMI_MONTHLY' | 'PERIOD_MONTHLY';
   pay_start: string;
   active: boolean;
 }
@@ -248,9 +248,16 @@ const AddNewOrganization: React.FC<AddNewOrganizationProps> = ({ onBack, onSave 
                   cursor: 'pointer'
                 }}
               >
-                <option value="PERIOD_WEEKLY">Weekly</option>
-                <option value="PERIOD_BIWEEKLY">Bi-weekly</option>
-                <option value="PERIOD_MONTHLY">Monthly</option>
+                <option value="DAY">Day</option>
+                <option value="MONTH">Month</option>
+                <option value="QUARTER">Quarter</option>
+                <option value="HALF">Half</option>
+                <option value="YEAR">Year</option>
+                <option value="PERIOD_DAILY">Period Daily</option>
+                <option value="PERIOD_WEEKLY">Period Weekly</option>
+                <option value="PERIOD_BIWEEKLY">Period Biweekly</option>
+                <option value="PERIOD_SEMI_MONTHLY">Period Semi Monthly</option>
+                <option value="PERIOD_MONTHLY">Period Monthly</option>
               </select>
             </div>
 
