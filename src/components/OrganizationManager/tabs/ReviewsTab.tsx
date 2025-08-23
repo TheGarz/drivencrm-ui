@@ -220,22 +220,10 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({ organization, onUpdate }) => {
               bottom: 0,
               backgroundColor: settings.enabled ? currentTheme.primary : currentTheme.border,
               transition: '0.4s',
-              borderRadius: '34px',
-              '::before': {
-                position: 'absolute',
-                content: '',
-                height: '26px',
-                width: '26px',
-                left: settings.enabled ? '30px' : '4px',
-                bottom: '4px',
-                backgroundColor: 'white',
-                transition: '0.4s',
-                borderRadius: '50%'
-              }
+              borderRadius: '34px'
             }}>
               <div style={{
                 position: 'absolute',
-                content: '',
                 height: '26px',
                 width: '26px',
                 left: settings.enabled ? '30px' : '4px',

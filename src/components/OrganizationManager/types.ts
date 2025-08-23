@@ -25,6 +25,7 @@ export interface Organization {
   integration_count: number;
   reviewsEnabled?: boolean;
   rewardsEnabled?: boolean;
+  settings?: Record<string, any>;
   app_config?: AppConfig;
   services?: ServiceResource[];
   users?: User[];
