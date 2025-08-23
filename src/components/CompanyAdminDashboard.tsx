@@ -51,6 +51,7 @@ const CompanyAdminDashboard: React.FC = () => {
   // Organizations page state
   const [orgSearchQuery, setOrgSearchQuery] = useState<string>('');
   const [displayedOrgs, setDisplayedOrgs] = useState<number>(10);
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState<number | null>(null);
 
   // Company Admin Navigation
   const navigationItems: NavigationItem[] = [
@@ -173,11 +174,12 @@ return;
       // In a real app, you'd refresh the data from the server
       console.log('Organization created successfully:', newOrg);
       
-      // Navigate back to organizations list
-      setCurrentView('organizations');
+      // Navigate to the new organization's management page
+      setSelectedOrganizationId(newOrg.id);
+      setCurrentView('manage-organization');
       
       // Show success message (in a real app, you might use a toast notification)
-      alert(`Organization "${orgData.name}" created successfully!`);
+      alert(`Organization "${orgData.name}" created successfully! You are now viewing its management page.`);
       
     } catch (error) {
       console.error('Error creating organization:', error);
@@ -548,7 +550,10 @@ return;
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button
-                      onClick={() => setCurrentView('manage-organization')}
+                      onClick={() => {
+                        setSelectedOrganizationId(org.id);
+                        setCurrentView('manage-organization');
+                      }}
                       style={{
                         backgroundColor: 'transparent',
                         border: `1px solid ${currentTheme.border}`,
@@ -650,7 +655,10 @@ return;
         );
 
       case 'manage-organization':
-        return <OrganizationManager onBack={() => setCurrentView('organizations')} />;
+        return <OrganizationManager 
+          onBack={() => setCurrentView('organizations')} 
+          organizationId={selectedOrganizationId}
+        />;
 
       case 'add-organization':
         return <AddNewOrganization 

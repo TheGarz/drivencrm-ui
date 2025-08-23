@@ -14,9 +14,13 @@ import IntegrationsTab from './tabs/IntegrationsTab';
 import AnalyticsTab from './tabs/AnalyticsTab';
 import CustomRulesTab from './tabs/CustomRulesTab';
 
-const OrganizationManager: React.FC<OrganizationManagerProps> = ({ onBack }) => {
+const OrganizationManager: React.FC<OrganizationManagerProps> = ({ onBack, organizationId }) => {
   const { currentTheme } = useTheme();
-  const [organization, setOrganization] = useState<Organization>(mockOrganization);
+  const [organization, setOrganization] = useState<Organization>(() => {
+    // If organizationId is provided, use it to fetch the correct organization
+    // For now, using mockOrganization but setting the ID if provided
+    return organizationId ? { ...mockOrganization, id: organizationId } : mockOrganization;
+  });
   const [activeTab, setActiveTab] = useState('general');
   const [loading, setLoading] = useState(false);
   const [currentView, setCurrentView] = useState<'organization' | 'add-user'>('organization');

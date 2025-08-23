@@ -97,4 +97,5 @@ export interface IntegrationModalProps {
 
 export interface OrganizationManagerProps {
   onBack?: () => void;
+  organizationId?: number;
 }
