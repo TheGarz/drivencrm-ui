@@ -50,7 +50,7 @@ const ScriptButton: React.FC<{
 };
 
 const ScriptControls: React.FC<{
-    eventBus: EventEmitter,
+    eventBus: EventEmitter<string | symbol, any>,
     uid: string,
     scriptEditorProps: ScriptEditorProps,
     editorRef: React.RefObject<monaco.editor.IStandaloneCodeEditor | null>
