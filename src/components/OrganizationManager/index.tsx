@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Building2, Users, BarChart3, Link, Shield, Activity } from 'lucide-react';
+import { ArrowLeft, Building2, Users, BarChart3, Link, Shield, Activity, Star, Gift } from 'lucide-react';
 import { useTheme } from '../../theme/ThemeContext';
 import type { Organization, OrganizationManagerProps } from './types';
 import { mockOrganization } from './mockData';
@@ -13,6 +13,8 @@ import MetricsTab from './tabs/MetricsTab';
 import IntegrationsTab from './tabs/IntegrationsTab';
 import AnalyticsTab from './tabs/AnalyticsTab';
 import CustomRulesTab from './tabs/CustomRulesTab';
+import ReviewsTab from './tabs/ReviewsTab';
+import RewardsTab from './tabs/RewardsTab';
 
 const OrganizationManager: React.FC<OrganizationManagerProps> = ({ onBack, organizationId }) => {
   const { currentTheme } = useTheme();
@@ -31,6 +33,8 @@ const OrganizationManager: React.FC<OrganizationManagerProps> = ({ onBack, organ
     { id: 'metrics', label: 'Metrics', icon: Activity, component: MetricsTab },
     { id: 'integrations', label: 'Integrations', icon: Link, component: IntegrationsTab },
     { id: 'custom-rules', label: 'Custom Rules', icon: Shield, component: CustomRulesTab },
+    { id: 'reviews', label: 'Reviews', icon: Star, component: ReviewsTab },
+    { id: 'rewards', label: 'Rewards', icon: Gift, component: RewardsTab },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, component: AnalyticsTab }
   ];
 
