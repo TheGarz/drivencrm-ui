@@ -15,6 +15,10 @@ const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Or
   const [integrationToDelete, setIntegrationToDelete] = useState<{uid: string, name: string} | null>(null);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [selectedServiceForConfig, setSelectedServiceForConfig] = useState<any>(null);
+  const [showCrmDeleteModal, setShowCrmDeleteModal] = useState(false);
+  const [crmIntegrationToDelete, setCrmIntegrationToDelete] = useState<{uid: string, name: string} | null>(null);
+  const [crmDeleteConfirmed, setCrmDeleteConfirmed] = useState(false);
+  const [crmDeleteText, setCrmDeleteText] = useState('');
 
   const hasCrmIntegration = organization.services?.some(service => 
     allIntegrations.find(integration => integration.id === service.type)?.crmSystem
@@ -59,15 +63,28 @@ const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Or
     const service = organization.services?.find(s => s.uid === serviceUid);
     const integration = allIntegrations.find(i => i.id === service?.type);
     
-    setIntegrationToDelete({
-      uid: serviceUid,
-      name: integration?.name || service?.name || 'Unknown Integration'
-    });
-    setShowDeleteModal(true);
+    const integrationName = integration?.name || service?.name || 'Unknown Integration';
+    
+    // Check if this is a CRM integration
+    if (integration?.crmSystem) {
+      setCrmIntegrationToDelete({
+        uid: serviceUid,
+        name: integrationName
+      });
+      setShowCrmDeleteModal(true);
+    } else {
+      setIntegrationToDelete({
+        uid: serviceUid,
+        name: integrationName
+      });
+      setShowDeleteModal(true);
+    }
   };
 
   const handleConfirmDelete = () => {
-    if (!integrationToDelete) return;
+    if (!integrationToDelete) {
+return;
+}
 
     // Remove the integration from the organization's services
     const updatedOrganization = {
@@ -91,13 +108,46 @@ const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Or
     setIntegrationToDelete(null);
   };
 
+  const handleConfirmCrmDelete = () => {
+    if (!crmIntegrationToDelete) {
+return;
+}
+
+    // Remove the CRM integration from the organization's services
+    const updatedOrganization = {
+      ...organization,
+      services: organization.services?.filter(service => service.uid !== crmIntegrationToDelete.uid) || [],
+      integration_count: (organization.integration_count || 1) - 1
+    };
+
+    // Update the organization
+    onUpdate(updatedOrganization);
+
+    // Close the modal and reset state
+    setShowCrmDeleteModal(false);
+    setCrmIntegrationToDelete(null);
+    setCrmDeleteConfirmed(false);
+    setCrmDeleteText('');
+
+    console.log('CRM Integration removed:', crmIntegrationToDelete.name);
+  };
+
+  const handleCancelCrmDelete = () => {
+    setShowCrmDeleteModal(false);
+    setCrmIntegrationToDelete(null);
+    setCrmDeleteConfirmed(false);
+    setCrmDeleteText('');
+  };
+
   const handleConfigureIntegration = (service: any) => {
     setSelectedServiceForConfig(service);
     setShowConfigModal(true);
   };
 
   const handleSaveConfig = (config: Record<string, any>) => {
-    if (!selectedServiceForConfig) return;
+    if (!selectedServiceForConfig) {
+return;
+}
 
     // Update the service with new configuration
     const updatedServices = organization.services?.map(service => {
@@ -124,23 +174,41 @@ const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Or
   };
 
   const getStatusColor = (service: any) => {
-    if (service.status === 'needs_setup') return currentTheme.warning;
-    if (service.status === 'active' && service.configured) return currentTheme.success;
-    if (service.status === 'error') return currentTheme.danger;
+    if (service.status === 'needs_setup') {
+return currentTheme.warning;
+}
+    if (service.status === 'active' && service.configured) {
+return currentTheme.success;
+}
+    if (service.status === 'error') {
+return currentTheme.danger;
+}
     return currentTheme.textSecondary;
   };
 
   const getStatusText = (service: any) => {
-    if (service.status === 'needs_setup') return 'Needs Setup';
-    if (service.status === 'active' && service.configured) return 'Active';
-    if (service.status === 'error') return 'Error';
+    if (service.status === 'needs_setup') {
+return 'Needs Setup';
+}
+    if (service.status === 'active' && service.configured) {
+return 'Active';
+}
+    if (service.status === 'error') {
+return 'Error';
+}
     return 'Inactive';
   };
 
   const getStatusIcon = (service: any) => {
-    if (service.status === 'needs_setup') return <Clock size={16} />;
-    if (service.status === 'active' && service.configured) return <CheckCircle size={16} />;
-    if (service.status === 'error') return <AlertCircle size={16} />;
+    if (service.status === 'needs_setup') {
+return <Clock size={16} />;
+}
+    if (service.status === 'active' && service.configured) {
+return <CheckCircle size={16} />;
+}
+    if (service.status === 'error') {
+return <AlertCircle size={16} />;
+}
     return <AlertCircle size={16} />;
   };
 
@@ -602,6 +670,211 @@ const IntegrationsTab: React.FC<{ organization: Organization; onUpdate: (org: Or
                 }}
               >
                 Remove Integration
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enhanced CRM Delete Confirmation Modal */}
+      {showCrmDeleteModal && crmIntegrationToDelete && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: currentTheme.cardBg,
+            borderRadius: '12px',
+            border: `2px solid ${currentTheme.danger}`,
+            padding: '32px',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              marginBottom: '24px'
+            }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                backgroundColor: currentTheme.danger + '20',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <AlertCircle size={32} style={{ color: currentTheme.danger }} />
+              </div>
+              <div>
+                <h3 style={{
+                  color: currentTheme.danger,
+                  margin: '0 0 4px 0',
+                  fontSize: '20px',
+                  fontWeight: '700'
+                }}>
+                  ⚠️ CRITICAL WARNING
+                </h3>
+                <p style={{
+                  color: currentTheme.textSecondary,
+                  margin: 0,
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}>
+                  You are about to remove a CRM system
+                </p>
+              </div>
+            </div>
+
+            <div style={{
+              backgroundColor: currentTheme.danger + '10',
+              border: `1px solid ${currentTheme.danger}40`,
+              borderRadius: '8px',
+              padding: '20px',
+              marginBottom: '24px'
+            }}>
+              <p style={{
+                color: currentTheme.textPrimary,
+                margin: '0 0 16px 0',
+                fontSize: '16px',
+                lineHeight: '1.5',
+                fontWeight: '500'
+              }}>
+                Removing <strong>{crmIntegrationToDelete.name}</strong> will cause serious problems:
+              </p>
+              <ul style={{
+                color: currentTheme.textPrimary,
+                margin: '0 0 16px 0',
+                paddingLeft: '20px',
+                fontSize: '14px',
+                lineHeight: '1.6'
+              }}>
+                <li><strong>Break all metrics and dashboards</strong> - Your performance data will be corrupted</li>
+                <li><strong>Stop data synchronization</strong> - Customer and service data will no longer sync</li>
+                <li><strong>Disrupt other integrations</strong> - Connected services rely on CRM data</li>
+                <li><strong>Cause data inconsistencies</strong> - Historical reports may become unreliable</li>
+              </ul>
+              <div style={{
+                backgroundColor: currentTheme.primary + '20',
+                border: `1px solid ${currentTheme.primary}`,
+                borderRadius: '6px',
+                padding: '12px',
+                color: currentTheme.textPrimary,
+                fontSize: '14px',
+                fontWeight: '500'
+              }}>
+                💡 <strong>Need to change CRM settings?</strong> Contact our support team instead:<br/>
+                <a 
+                  href="mailto:Support@bemoredriven.com" 
+                  style={{ color: currentTheme.primary, textDecoration: 'none' }}
+                >
+                  Support@bemoredriven.com
+                </a>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                cursor: 'pointer',
+                marginBottom: '16px'
+              }}>
+                <input
+                  type="checkbox"
+                  checked={crmDeleteConfirmed}
+                  onChange={(e) => setCrmDeleteConfirmed(e.target.checked)}
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    accentColor: currentTheme.danger
+                  }}
+                />
+                <span style={{
+                  color: currentTheme.textPrimary,
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}>
+                  I understand this will break metrics and cause data problems
+                </span>
+              </label>
+
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  color: currentTheme.textPrimary,
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  marginBottom: '8px'
+                }}>
+                  Type "DELETE" to confirm (all caps):
+                </label>
+                <input
+                  type="text"
+                  value={crmDeleteText}
+                  onChange={(e) => setCrmDeleteText(e.target.value)}
+                  placeholder="Type DELETE here..."
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: `2px solid ${crmDeleteText === 'DELETE' ? currentTheme.success : currentTheme.border}`,
+                    borderRadius: '8px',
+                    backgroundColor: currentTheme.background,
+                    color: currentTheme.textPrimary,
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                onClick={handleCancelCrmDelete}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: currentTheme.primary,
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '600'
+                }}
+              >
+                Cancel (Recommended)
+              </button>
+              <button
+                onClick={handleConfirmCrmDelete}
+                disabled={!crmDeleteConfirmed || crmDeleteText !== 'DELETE'}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: crmDeleteConfirmed && crmDeleteText === 'DELETE' ? currentTheme.danger : currentTheme.border,
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: crmDeleteConfirmed && crmDeleteText === 'DELETE' ? 'white' : currentTheme.textSecondary,
+                  cursor: crmDeleteConfirmed && crmDeleteText === 'DELETE' ? 'pointer' : 'not-allowed',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  opacity: crmDeleteConfirmed && crmDeleteText === 'DELETE' ? 1 : 0.6
+                }}
+              >
+                Delete CRM System
               </button>
             </div>
           </div>

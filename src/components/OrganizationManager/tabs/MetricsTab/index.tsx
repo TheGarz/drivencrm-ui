@@ -71,7 +71,9 @@ const MetricsTab: React.FC<{ organization: Organization; onUpdate: (org: Organiz
 
   // Handle adding a metric to current group
   const handleAddMetric = () => {
-    if (!selectedMetric || !currentGroup || currentGroup.metrics.length >= 5) return;
+    if (!selectedMetric || !currentGroup || currentGroup.metrics.length >= 5) {
+return;
+}
 
     const updatedGroups = metricGroups.map(group => {
       if (group.id === activeTab) {
@@ -129,7 +131,9 @@ const MetricsTab: React.FC<{ organization: Organization; onUpdate: (org: Organiz
 
   // Handle confirmed deactivation
   const handleConfirmDeactivate = () => {
-    if (!groupToDeactivate) return;
+    if (!groupToDeactivate) {
+return;
+}
 
     const updatedGroups = metricGroups.map(group => {
       if (group.id === groupToDeactivate) {
@@ -171,7 +175,9 @@ const MetricsTab: React.FC<{ organization: Organization; onUpdate: (org: Organiz
 
   // Handle save metric edit
   const handleSaveMetricEdit = () => {
-    if (!editingMetric) return;
+    if (!editingMetric) {
+return;
+}
 
     const displayName = editForm.displayName.trim();
     const uid = displayName ? generateUID(displayName) : undefined;
@@ -276,7 +282,9 @@ const MetricsTab: React.FC<{ organization: Organization; onUpdate: (org: Organiz
 
   // Handle saving group edit
   const handleSaveGroupEdit = () => {
-    if (!editingGroup || !newGroupName.trim()) return;
+    if (!editingGroup || !newGroupName.trim()) {
+return;
+}
 
     // Remove users from their current groups if they're being transferred
     let updatedGroups = metricGroups.map(group => {
@@ -378,7 +386,9 @@ const MetricsTab: React.FC<{ organization: Organization; onUpdate: (org: Organiz
     
     // Then check default group assignment based on role
     const user = organization.users?.find(u => u.id === userId);
-    if (!user) return null;
+    if (!user) {
+return null;
+}
     
     const roleToGroupMap: Record<string, string> = {
       'tech': 'tech',
@@ -477,7 +487,9 @@ const MetricsTab: React.FC<{ organization: Organization; onUpdate: (org: Organiz
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
-    if (draggedItem === null || draggedItem === index) return;
+    if (draggedItem === null || draggedItem === index) {
+return;
+}
 
     const updatedGroups = metricGroups.map(group => {
       if (group.id === activeTab) {
@@ -522,7 +534,9 @@ const MetricsTab: React.FC<{ organization: Organization; onUpdate: (org: Organiz
 
   // Get available metrics for current group
   const getAvailableMetrics = () => {
-    if (!currentGroup) return [];
+    if (!currentGroup) {
+return [];
+}
     
     const category = currentGroup.isDefault ? currentGroup.name as 'branch' | 'csr' | 'sales' | 'tech' : 'custom';
     return availableMetrics.filter(metric => 

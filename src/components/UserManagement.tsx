@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../theme/ThemeContext';
 import { 
   ArrowLeft,
@@ -9,8 +9,11 @@ import {
   Save,
   X,
   Search,
-  Plus
+  Plus,
+  FileText
 } from 'lucide-react';
+import { ScriptEditor } from './features/script-editor';
+import { rulesAPI } from './OrganizationManager/api/userRules';
 
 interface User {
   id: number;
@@ -283,6 +286,33 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
   const [searchBranch, setSearchBranch] = useState('');
   const [displayedCrmUsers, setDisplayedCrmUsers] = useState(10);
   const [displayedBranches, setDisplayedBranches] = useState(8);
+  
+  // User rules state
+  const [script, setScript] = useState<string>('-- Loading user rules...');
+  const [rulesLoading, setRulesLoading] = useState(true);
+  const [rulesError, setRulesError] = useState<string | null>(null);
+
+  // Fetch user rules when component mounts
+  useEffect(() => {
+    const fetchUserRules = async () => {
+      if (!user.connectedCrmUser) return; // Only fetch for connected users
+      
+      setRulesLoading(true);
+      setRulesError(null);
+
+      try {
+        const userScript = await rulesAPI.getRulesForUser({ id: user.id });
+        setScript(userScript);
+      } catch (err) {
+        console.error('Failed to fetch user rules:', err);
+        setRulesError('Failed to load user rules. Please try again.');
+      } finally {
+        setRulesLoading(false);
+      }
+    };
+
+    fetchUserRules();
+  }, [user.id, user.connectedCrmUser]);
 
   const handleInputChange = (field: string, value: string) => {
     setEditUserData(prev => ({
@@ -306,11 +336,39 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
     // Assigning branch
   };
 
+  // Script editor handlers
+  const handleScriptSave = async (script: string) => {
+    try {
+      await rulesAPI.updateRulesForUser({ id: user.id, script });
+      // Log for debugging - replace with proper notification
+      // eslint-disable-next-line no-console
+      console.log('User rules saved successfully for user:', user.id);
+    } catch (err) { 
+      console.error('Failed to save user rules:', err);
+      throw err;
+    }
+  };
+
+  const handleScriptCompile = async (script: string) => {
+    try {
+      await rulesAPI.testCompileRules(script);
+      // Log for debugging - replace with proper notification
+      // eslint-disable-next-line no-console
+      console.log('User script compiled successfully');
+    } catch (err) {
+      console.error('Failed to compile user script:', err);
+      throw err;
+    }
+  };
+
+  // Determine available sections based on user's connected CRM user status
   const sections = [
     { id: 'details', label: 'User Details', icon: User },
     { id: 'crm-user', label: 'CRM User', icon: Link },
     { id: 'branch', label: 'Company Branch', icon: Building2 },
-    { id: 'relationships', label: 'Relationships', icon: Users }
+    { id: 'relationships', label: 'Relationships', icon: Users },
+    // Only show Rules section if user has a connected CRM user
+    ...(user.connectedCrmUser ? [{ id: 'rules', label: 'Rules', icon: FileText }] : [])
   ];
 
   const filteredCrmUsers = crmUsers.filter(user =>
@@ -1484,6 +1542,69 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
     </div>
   );
 
+  const renderUserRules = () => (
+    <div style={{
+      backgroundColor: currentTheme.cardBg,
+      borderRadius: '12px',
+      border: `1px solid ${currentTheme.border}`,
+      padding: '24px'
+    }}>
+      <div style={{ marginBottom: '20px' }}>
+        <h3 style={{
+          color: currentTheme.textPrimary,
+          margin: '0 0 8px 0',
+          fontSize: '18px',
+          fontWeight: '600'
+        }}>
+          User-Specific Rules
+        </h3>
+        <p style={{
+          color: currentTheme.textSecondary,
+          margin: 0,
+          fontSize: '14px',
+          lineHeight: '1.4'
+        }}>
+          The metric rules section allows you to define and edit rules
+          that apply to this specific user ({user.name}).
+          <br /><br />
+          User rules override organization and branch rules for this user.
+          To create organization-wide rules, navigate to the Organization Rules section.
+        </p>
+      </div>
+      
+      {rulesError && (
+        <div style={{
+          color: currentTheme.danger,
+          backgroundColor: currentTheme.danger + '10',
+          padding: '12px',
+          borderRadius: '8px',
+          marginBottom: '20px',
+          fontSize: '14px'
+        }}>
+          {rulesError}
+        </div>
+      )}
+      
+      {rulesLoading ? (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '200px',
+          color: currentTheme.textSecondary
+        }}>
+          Loading user rules...
+        </div>
+      ) : (
+        <ScriptEditor
+          script={script}
+          onSave={handleScriptSave}
+          onCompile={handleScriptCompile}
+        />
+      )}
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeSection) {
       case 'details':
@@ -1494,6 +1615,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
         return renderBranchSection();
       case 'relationships':
         return renderRelationshipsSection();
+      case 'rules':
+        return renderUserRules();
       default:
         return renderUserDetails();
     }

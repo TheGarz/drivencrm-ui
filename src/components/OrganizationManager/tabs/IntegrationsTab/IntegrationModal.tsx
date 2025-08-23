@@ -12,7 +12,9 @@ const IntegrationModal: React.FC<IntegrationModalProps> = ({
 }) => {
   const { currentTheme } = useTheme();
 
-  if (!isOpen || !integration) return null;
+  if (!isOpen || !integration) {
+return null;
+}
 
   const canConnect = integration.crmSystem || hasCrmIntegration;
 

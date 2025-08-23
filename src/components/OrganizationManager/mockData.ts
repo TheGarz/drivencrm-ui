@@ -12,7 +12,7 @@ export const mockOrganization: Organization = {
   total_users: 47,
   total_branches: 3,
   monthly_revenue: 125000,
-  integration_count: 5,
+  integration_count: 0,
   app_config: {
     version: 2,
     metrics: {
@@ -28,22 +28,7 @@ export const mockOrganization: Organization = {
       ]
     }
   },
-  services: [
-    {
-      uid: 'fieldroutes-001',
-      type: 'FIELDROUTES',
-      name: 'FieldRoutes CRM',
-      status: 'active',
-      last_sync: '2024-01-15T10:30:00Z'
-    },
-    {
-      uid: 'hubspot-001', 
-      type: 'HUBSPOT',
-      name: 'HubSpot Leads',
-      status: 'active',
-      last_sync: '2024-01-15T09:45:00Z'
-    }
-  ],
+  services: [],
   users: [
     { id: 1, name: 'John Smith', email: 'john@crosspest.com', role: 'Admin', status: 'Active', lastLogin: '2024-01-15', connectedCrmUser: 'john.smith' },
     { id: 2, name: 'Sarah Johnson', email: 'sarah@crosspest.com', role: 'Manager', status: 'Active', lastLogin: '2024-01-14', connectedCrmUser: 'sarah.johnson' },
