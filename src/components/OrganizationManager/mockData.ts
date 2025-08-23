@@ -13,6 +13,8 @@ export const mockOrganization: Organization = {
   total_branches: 3,
   monthly_revenue: 125000,
   integration_count: 0,
+  reviewsEnabled: true,
+  rewardsEnabled: false,
   app_config: {
     version: 2,
     metrics: {

@@ -63,24 +63,24 @@ const CompanyAdminDashboard: React.FC = () => {
 
   // Organizations mock data
   const mockOrganizations = [
-    { id: 1, name: 'Cross Pest Control', active: true, userCount: 47, branchCount: 3, integrationCount: 5 },
-    { id: 2, name: 'White Knight', active: true, userCount: 23, branchCount: 2, integrationCount: 3 },
-    { id: 3, name: 'Pest-Stop', active: false, userCount: 8, branchCount: 1, integrationCount: 1 },
-    { id: 4, name: 'ACTION Termite & Pest Control', active: true, userCount: 156, branchCount: 8, integrationCount: 7 },
-    { id: 5, name: 'Thorn Pest Solutions', active: true, userCount: 34, branchCount: 2, integrationCount: 4 },
-    { id: 6, name: 'Pest Master', active: true, userCount: 67, branchCount: 4, integrationCount: 6 },
-    { id: 7, name: 'Trads Pest Control', active: false, userCount: 12, branchCount: 1, integrationCount: 2 },
-    { id: 8, name: 'Kanga Pest Control', active: true, userCount: 89, branchCount: 5, integrationCount: 5 },
-    { id: 9, name: 'Cape Pest Control', active: true, userCount: 45, branchCount: 3, integrationCount: 4 },
-    { id: 10, name: 'Elite Pest Solutions', active: true, userCount: 78, branchCount: 4, integrationCount: 6 },
-    { id: 11, name: 'Guardian Pest Control', active: false, userCount: 15, branchCount: 1, integrationCount: 1 },
-    { id: 12, name: 'ProShield Exterminating', active: true, userCount: 123, branchCount: 6, integrationCount: 8 },
-    { id: 13, name: 'Apex Pest Management', active: true, userCount: 56, branchCount: 3, integrationCount: 5 },
-    { id: 14, name: 'SafeGuard Pest Control', active: true, userCount: 91, branchCount: 5, integrationCount: 7 },
-    { id: 15, name: 'Premier Pest Services', active: false, userCount: 22, branchCount: 2, integrationCount: 2 },
-    { id: 16, name: 'BugBusters Inc', active: true, userCount: 38, branchCount: 2, integrationCount: 3 },
-    { id: 17, name: 'Termite Shield Solutions', active: true, userCount: 72, branchCount: 4, integrationCount: 6 },
-    { id: 18, name: 'EcoSafe Pest Control', active: true, userCount: 29, branchCount: 2, integrationCount: 4 }
+    { id: 1, name: 'Cross Pest Control', active: true, userCount: 47, branchCount: 3, integrationCount: 5, reviewsEnabled: true, rewardsEnabled: true },
+    { id: 2, name: 'White Knight', active: true, userCount: 23, branchCount: 2, integrationCount: 3, reviewsEnabled: false, rewardsEnabled: true },
+    { id: 3, name: 'Pest-Stop', active: false, userCount: 8, branchCount: 1, integrationCount: 1, reviewsEnabled: false, rewardsEnabled: false },
+    { id: 4, name: 'ACTION Termite & Pest Control', active: true, userCount: 156, branchCount: 8, integrationCount: 7, reviewsEnabled: true, rewardsEnabled: false },
+    { id: 5, name: 'Thorn Pest Solutions', active: true, userCount: 34, branchCount: 2, integrationCount: 4, reviewsEnabled: true, rewardsEnabled: true },
+    { id: 6, name: 'Pest Master', active: true, userCount: 67, branchCount: 4, integrationCount: 6, reviewsEnabled: false, rewardsEnabled: true },
+    { id: 7, name: 'Trads Pest Control', active: false, userCount: 12, branchCount: 1, integrationCount: 2, reviewsEnabled: false, rewardsEnabled: false },
+    { id: 8, name: 'Kanga Pest Control', active: true, userCount: 89, branchCount: 5, integrationCount: 5, reviewsEnabled: true, rewardsEnabled: false },
+    { id: 9, name: 'Cape Pest Control', active: true, userCount: 45, branchCount: 3, integrationCount: 4, reviewsEnabled: false, rewardsEnabled: true },
+    { id: 10, name: 'Elite Pest Solutions', active: true, userCount: 78, branchCount: 4, integrationCount: 6, reviewsEnabled: true, rewardsEnabled: true },
+    { id: 11, name: 'Guardian Pest Control', active: false, userCount: 15, branchCount: 1, integrationCount: 1, reviewsEnabled: false, rewardsEnabled: false },
+    { id: 12, name: 'ProShield Exterminating', active: true, userCount: 123, branchCount: 6, integrationCount: 8, reviewsEnabled: true, rewardsEnabled: true },
+    { id: 13, name: 'Apex Pest Management', active: true, userCount: 56, branchCount: 3, integrationCount: 5, reviewsEnabled: false, rewardsEnabled: false },
+    { id: 14, name: 'SafeGuard Pest Control', active: true, userCount: 91, branchCount: 5, integrationCount: 7, reviewsEnabled: true, rewardsEnabled: true },
+    { id: 15, name: 'Premier Pest Services', active: false, userCount: 22, branchCount: 2, integrationCount: 2, reviewsEnabled: false, rewardsEnabled: false },
+    { id: 16, name: 'BugBusters Inc', active: true, userCount: 38, branchCount: 2, integrationCount: 3, reviewsEnabled: true, rewardsEnabled: false },
+    { id: 17, name: 'Termite Shield Solutions', active: true, userCount: 72, branchCount: 4, integrationCount: 6, reviewsEnabled: false, rewardsEnabled: true },
+    { id: 18, name: 'EcoSafe Pest Control', active: true, userCount: 29, branchCount: 2, integrationCount: 4, reviewsEnabled: true, rewardsEnabled: true }
   ];
 
   // Filter organizations based on search query
@@ -168,7 +168,9 @@ return;
         active: orgData.active,
         userCount: 0,
         branchCount: 0,
-        integrationCount: 0
+        integrationCount: 0,
+        reviewsEnabled: false,
+        rewardsEnabled: false
       };
 
       // In a real app, you'd refresh the data from the server
@@ -479,7 +481,7 @@ return;
                 {/* Organizations Table Header */}
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: '80px 2fr 80px 80px 80px 100px 200px',
+                  gridTemplateColumns: '80px 2fr 80px 80px 80px 80px 80px 100px 200px',
                   gap: '16px',
                   padding: '16px 0',
                   borderBottom: `1px solid ${currentTheme.border}`,
@@ -492,6 +494,8 @@ return;
                 <div style={{ textAlign: 'center' }}>Users</div>
                 <div style={{ textAlign: 'center' }}>Branches</div>
                 <div style={{ textAlign: 'center' }}>Integrations</div>
+                <div style={{ textAlign: 'center' }}>Reviews</div>
+                <div style={{ textAlign: 'center' }}>Rewards</div>
                 <div style={{ textAlign: 'center' }}>Status</div>
                 <div>Actions</div>
               </div>
@@ -500,7 +504,7 @@ return;
               {visibleOrganizations.map((org) => (
                 <div key={org.id} style={{
                   display: 'grid',
-                  gridTemplateColumns: '80px 2fr 80px 80px 80px 100px 200px',
+                  gridTemplateColumns: '80px 2fr 80px 80px 80px 80px 80px 100px 200px',
                   gap: '16px',
                   padding: '20px 0',
                   borderBottom: `1px solid ${currentTheme.border}`,
@@ -535,6 +539,30 @@ return;
                     fontSize: '16px'
                   }}>
                     {org.integrationCount}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <span style={{
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      backgroundColor: org.reviewsEnabled ? currentTheme.success + '20' : currentTheme.danger + '20',
+                      color: org.reviewsEnabled ? currentTheme.success : currentTheme.danger
+                    }}>
+                      {org.reviewsEnabled ? 'Enabled' : 'Disabled'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <span style={{
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      backgroundColor: org.rewardsEnabled ? currentTheme.success + '20' : currentTheme.danger + '20',
+                      color: org.rewardsEnabled ? currentTheme.success : currentTheme.danger
+                    }}>
+                      {org.rewardsEnabled ? 'Enabled' : 'Disabled'}
+                    </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <span style={{

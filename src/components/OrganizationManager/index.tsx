@@ -21,7 +21,19 @@ const OrganizationManager: React.FC<OrganizationManagerProps> = ({ onBack, organ
   const [organization, setOrganization] = useState<Organization>(() => {
     // If organizationId is provided, use it to fetch the correct organization
     // For now, using mockOrganization but setting the ID if provided
-    return organizationId ? { ...mockOrganization, id: organizationId } : mockOrganization;
+    // In a real app, you would fetch the organization data by ID
+    if (organizationId) {
+      // Mock different organizations with different settings based on ID
+      const orgVariations = [
+        { ...mockOrganization, id: 1, reviewsEnabled: true, rewardsEnabled: true },
+        { ...mockOrganization, id: 2, reviewsEnabled: false, rewardsEnabled: true },
+        { ...mockOrganization, id: 3, reviewsEnabled: false, rewardsEnabled: false },
+        { ...mockOrganization, id: 4, reviewsEnabled: true, rewardsEnabled: false },
+        { ...mockOrganization, id: 5, reviewsEnabled: true, rewardsEnabled: true }
+      ];
+      return orgVariations.find(org => org.id === organizationId) || { ...mockOrganization, id: organizationId };
+    }
+    return mockOrganization;
   });
   const [activeTab, setActiveTab] = useState('general');
   const [loading, setLoading] = useState(false);
@@ -132,6 +144,41 @@ const OrganizationManager: React.FC<OrganizationManagerProps> = ({ onBack, organ
             }}>
               {organization.name}
             </h1>
+            
+            {/* Reviews Status Label */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px 8px',
+              borderRadius: '12px',
+              fontSize: '12px',
+              fontWeight: '500',
+              backgroundColor: organization.reviewsEnabled ? currentTheme.success + '20' : currentTheme.textSecondary + '20',
+              color: organization.reviewsEnabled ? currentTheme.success : currentTheme.textSecondary,
+              border: `1px solid ${organization.reviewsEnabled ? currentTheme.success + '40' : currentTheme.textSecondary + '40'}`
+            }}>
+              <Star size={14} />
+              Reviews {organization.reviewsEnabled ? 'On' : 'Off'}
+            </div>
+
+            {/* Rewards Status Label */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px 8px',
+              borderRadius: '12px',
+              fontSize: '12px',
+              fontWeight: '500',
+              backgroundColor: organization.rewardsEnabled ? currentTheme.success + '20' : currentTheme.textSecondary + '20',
+              color: organization.rewardsEnabled ? currentTheme.success : currentTheme.textSecondary,
+              border: `1px solid ${organization.rewardsEnabled ? currentTheme.success + '40' : currentTheme.textSecondary + '40'}`
+            }}>
+              <Gift size={14} />
+              Rewards {organization.rewardsEnabled ? 'On' : 'Off'}
+            </div>
+            
             <span style={{
               backgroundColor: organization.active ? currentTheme.success + '20' : currentTheme.danger + '20',
               color: organization.active ? currentTheme.success : currentTheme.danger,

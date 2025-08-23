@@ -23,6 +23,8 @@ export interface Organization {
   total_branches: number;
   monthly_revenue: number;
   integration_count: number;
+  reviewsEnabled?: boolean;
+  rewardsEnabled?: boolean;
   app_config?: AppConfig;
   services?: ServiceResource[];
   users?: User[];

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Gift, ExternalLink, Check, X, AlertCircle } from 'lucide-react';
 import { useTheme } from '../../../theme/ThemeContext';
 import type { Organization } from '../types';
@@ -21,11 +21,16 @@ interface SnappyOrgInfo {
 const RewardsTab: React.FC<RewardsTabProps> = ({ organization, onUpdate }) => {
   const { currentTheme } = useTheme();
   const [loading, setLoading] = useState(false);
-  const [rewardsEnabled, setRewardsEnabled] = useState(false);
+  const [rewardsEnabled, setRewardsEnabled] = useState(organization.rewardsEnabled || false);
   const [snappyConnected, setSnappyConnected] = useState(false);
   const [snappyOrgInfo, setSnappyOrgInfo] = useState<SnappyOrgInfo | null>(null);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
+
+  // Sync with organization state changes
+  useEffect(() => {
+    setRewardsEnabled(organization.rewardsEnabled || false);
+  }, [organization.rewardsEnabled]);
 
   const handleEnableRewards = async (enabled: boolean) => {
     setRewardsEnabled(enabled);
@@ -35,6 +40,7 @@ const RewardsTab: React.FC<RewardsTabProps> = ({ organization, onUpdate }) => {
     // Update organization with rewards settings
     const updatedOrg = {
       ...organization,
+      rewardsEnabled: enabled,
       settings: {
         ...organization.settings,
         rewardsEnabled: enabled

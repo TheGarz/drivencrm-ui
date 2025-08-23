@@ -42,20 +42,31 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({ organization, onUpdate }) => {
     // Load existing review settings for the organization
     // This would typically come from the organization data or a separate API call
     if (organization.id) {
-      // Mock loading existing settings - replace with actual API call
+      // Load settings from organization data
       setSettings(prev => ({
         ...prev,
-        enabled: organization.id === 1 // Example: enable for organization 1
+        enabled: organization.reviewsEnabled || false
       }));
     }
-  }, [organization.id]);
+  }, [organization.id, organization.reviewsEnabled]);
 
   const handleSettingChange = (key: keyof ReviewSettings, value: any) => {
-    setSettings(prev => ({
-      ...prev,
+    const newSettings = {
+      ...settings,
       [key]: value
-    }));
+    };
+    setSettings(newSettings);
     setSaveStatus('idle');
+    
+    // If the enabled status changed, immediately update the organization
+    if (key === 'enabled') {
+      const updatedOrg = {
+        ...organization,
+        reviewsEnabled: value,
+        reviewSettings: newSettings
+      };
+      onUpdate(updatedOrg);
+    }
   };
 
   const handleSave = async () => {
@@ -69,6 +80,7 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({ organization, onUpdate }) => {
       // Update organization with review settings
       const updatedOrg = {
         ...organization,
+        reviewsEnabled: settings.enabled,
         reviewSettings: settings
       };
       onUpdate(updatedOrg);
