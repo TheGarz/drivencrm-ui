@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext';
 import { ThemeSelector } from './ThemeSelector';
 import { DrivenBrandLogo } from './DrivenBrandLogo';
 import OrganizationManager from './OrganizationManager';
+import AddNewOrganization from './AddNewOrganization';
 import { 
   Moon, 
   Sun, 
@@ -31,7 +32,7 @@ interface NavigationItem {
   badge?: string;
 }
 
-type ViewType = 'dashboard' | 'organizations' | 'manage-organization' | 'driven-users' | 'settings';
+type ViewType = 'dashboard' | 'organizations' | 'manage-organization' | 'add-organization' | 'driven-users' | 'settings';
 
 const CompanyAdminDashboard: React.FC = () => {
   // Theme system
@@ -145,6 +146,46 @@ return;
 
   const handleToggleTheme = () => {
     toggleTheme();
+  };
+
+  // Handle saving new organization
+  const handleSaveNewOrganization = async (orgData: any, ownerData?: any) => {
+    try {
+      // Log the data for debugging
+      console.log('Creating new organization:', orgData);
+      if (ownerData) {
+        console.log('Creating owner user:', { ...ownerData, password: '[HIDDEN]' });
+      }
+
+      // Here you would typically make API calls to create the organization and user
+      // For now, we'll simulate the save process
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Add to mock data (in a real app, this would be handled by the backend)
+      const newOrg = {
+        id: mockOrganizations.length + 1,
+        name: orgData.name,
+        active: orgData.active,
+        userCount: ownerData ? 1 : 0,
+        branchCount: 0,
+        integrationCount: 0
+      };
+
+      // In a real app, you'd refresh the data from the server
+      console.log('Organization created successfully:', newOrg);
+      
+      // Navigate back to organizations list
+      setCurrentView('organizations');
+      
+      // Show success message (in a real app, you might use a toast notification)
+      alert(`Organization "${orgData.name}" created successfully!${ownerData ? ` Owner user "${ownerData.name}" has been added.` : ''}`);
+      
+    } catch (error) {
+      console.error('Error creating organization:', error);
+      throw new Error('Failed to create organization. Please try again.');
+    }
   };
 
   const handleLogout = () => {
@@ -388,6 +429,7 @@ return;
                   Organizations ({filteredOrganizations.length})
                 </h2>
                 <button
+                  onClick={() => setCurrentView('add-organization')}
                   style={{
                     backgroundColor: currentTheme.primary,
                     color: 'white',
@@ -612,6 +654,12 @@ return;
 
       case 'manage-organization':
         return <OrganizationManager onBack={() => setCurrentView('organizations')} />;
+
+      case 'add-organization':
+        return <AddNewOrganization 
+          onBack={() => setCurrentView('organizations')}
+          onSave={handleSaveNewOrganization}
+        />;
 
       case 'driven-users':
         return (
