@@ -295,7 +295,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ user, onBack, onUpdate 
   // Fetch user rules when component mounts
   useEffect(() => {
     const fetchUserRules = async () => {
-      if (!user.connectedCrmUser) return; // Only fetch for connected users
+      if (!user.connectedCrmUser) {
+return;
+} // Only fetch for connected users
       
       setRulesLoading(true);
       setRulesError(null);

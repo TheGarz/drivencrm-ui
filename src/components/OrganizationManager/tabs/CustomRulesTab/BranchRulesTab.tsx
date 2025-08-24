@@ -41,7 +41,9 @@ const BranchRulesTab: React.FC<BranchRulesTabProps> = ({ organization }) => {
   // Fetch branch rules when branch is selected
   useEffect(() => {
     const fetchBranchRules = async () => {
-      if (!selectedBranch) return;
+      if (!selectedBranch) {
+return;
+}
       
       setBranchLoading(true);
       setBranchError(null);
@@ -62,7 +64,9 @@ const BranchRulesTab: React.FC<BranchRulesTabProps> = ({ organization }) => {
 
   // Branch script handlers
   const handleBranchScriptSave = async (script: string) => {
-    if (!selectedBranch) return;
+    if (!selectedBranch) {
+return;
+}
     
     try {
       await branchRulesAPI.updateRulesForBranch({ branchId: selectedBranch.id, script });

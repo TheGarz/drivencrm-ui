@@ -43,7 +43,9 @@ const UserRulesTab: React.FC<UserRulesTabProps> = ({ organization }) => {
   // Fetch user rules when user is selected
   useEffect(() => {
     const fetchUserRules = async () => {
-      if (!selectedUser) return;
+      if (!selectedUser) {
+return;
+}
       
       setUserLoading(true);
       setUserError(null);
@@ -64,7 +66,9 @@ const UserRulesTab: React.FC<UserRulesTabProps> = ({ organization }) => {
 
   // User script handlers
   const handleUserScriptSave = async (script: string) => {
-    if (!selectedUser) return;
+    if (!selectedUser) {
+return;
+}
     
     try {
       await userRulesAPI.updateRulesForUser({ id: selectedUser.id, script });

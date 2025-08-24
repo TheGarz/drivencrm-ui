@@ -5,6 +5,8 @@ import { ThemeSelector } from './ThemeSelector';
 import { DrivenBrandLogo } from './DrivenBrandLogo';
 import OrganizationManager from './OrganizationManager';
 import AddNewOrganization from './AddNewOrganization';
+import AddDrivenUser from './AddDrivenUser';
+import UserProfileEdit from './UserProfileEdit';
 import { 
   Moon, 
   Sun, 
@@ -18,7 +20,14 @@ import {
   Palette,
   UserCheck,
   Search,
-  Plus
+  Plus,
+  Shield,
+  Edit3,
+  Mail,
+  Phone,
+  Filter,
+  ShieldCheck,
+  AlertTriangle
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
@@ -32,7 +41,7 @@ interface NavigationItem {
   badge?: string;
 }
 
-type ViewType = 'dashboard' | 'organizations' | 'manage-organization' | 'add-organization' | 'driven-users' | 'settings';
+type ViewType = 'dashboard' | 'organizations' | 'manage-organization' | 'add-organization' | 'driven-users' | 'edit-user' | 'add-driven-user' | 'profile' | 'settings';
 
 const CompanyAdminDashboard: React.FC = () => {
   // Theme system
@@ -52,6 +61,15 @@ const CompanyAdminDashboard: React.FC = () => {
   const [orgSearchQuery, setOrgSearchQuery] = useState<string>('');
   const [displayedOrgs, setDisplayedOrgs] = useState<number>(10);
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<number | null>(null);
+  
+  // Driven Users page state
+  const [userSearchQuery, setUserSearchQuery] = useState<string>('');
+  const [displayedUsers, setDisplayedUsers] = useState<number>(10);
+  const [userStatusFilter, setUserStatusFilter] = useState<string>('all');
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [showInactiveWarning, setShowInactiveWarning] = useState<boolean>(false);
+  const [userAccountActive, setUserAccountActive] = useState<boolean>(true);
+  const [userTwoFactorEnabled, setUserTwoFactorEnabled] = useState<boolean>(true);
 
   // Company Admin Navigation
   const navigationItems: NavigationItem[] = [
@@ -59,6 +77,114 @@ const CompanyAdminDashboard: React.FC = () => {
     { id: 'organizations', icon: Building2, text: 'Organizations', description: 'Manage Client Organizations' },
     { id: 'driven-users', icon: Users, text: 'Driven Users', description: 'Platform User Management' },
     { id: 'settings', icon: Settings, text: 'Settings', description: 'Platform Configuration' }
+  ];
+
+  // Driven Users mock data
+  const mockDrivenUsers = [
+    { 
+      id: 1, 
+      firstName: 'John',
+      middleName: 'Michael',
+      lastName: 'Smith',
+      username: 'jsmith',
+      email: 'john.smith@driven.com', 
+      active: true, 
+      lastLogin: '01/20/2024 2:45 PM',
+      phone: '+1 (555) 123-4567',
+      joinDate: '03/15/2023',
+      twoFactorEnabled: true
+    },
+    { 
+      id: 2, 
+      firstName: 'Sarah',
+      middleName: 'Anne',
+      lastName: 'Johnson',
+      username: 'sjohnson',
+      email: 'sarah.johnson@driven.com', 
+      active: true, 
+      lastLogin: '01/19/2024 11:30 AM',
+      phone: '+1 (555) 234-5678',
+      joinDate: '01/22/2023',
+      twoFactorEnabled: true
+    },
+    { 
+      id: 3, 
+      firstName: 'Mike',
+      middleName: '',
+      lastName: 'Wilson',
+      username: 'mwilson',
+      email: 'mike.wilson@driven.com', 
+      active: false, 
+      lastLogin: '01/10/2024 9:15 AM',
+      phone: '+1 (555) 345-6789',
+      joinDate: '08/03/2023',
+      twoFactorEnabled: false
+    },
+    { 
+      id: 4, 
+      firstName: 'Lisa',
+      middleName: 'Marie',
+      lastName: 'Brown',
+      username: 'lbrown',
+      email: 'lisa.brown@driven.com', 
+      active: true, 
+      lastLogin: '01/20/2024 4:22 PM',
+      phone: '+1 (555) 456-7890',
+      joinDate: '05/12/2023',
+      twoFactorEnabled: true
+    },
+    { 
+      id: 5, 
+      firstName: 'David',
+      middleName: 'James',
+      lastName: 'Lee',
+      username: 'dlee',
+      email: 'david.lee@driven.com', 
+      active: true, 
+      lastLogin: '01/19/2024 8:45 AM',
+      phone: '+1 (555) 567-8901',
+      joinDate: '06/28/2023',
+      twoFactorEnabled: false
+    },
+    { 
+      id: 6, 
+      firstName: 'Emily',
+      middleName: '',
+      lastName: 'Chen',
+      username: 'echen',
+      email: 'emily.chen@driven.com', 
+      active: true, 
+      lastLogin: '01/20/2024 1:10 PM',
+      phone: '+1 (555) 678-9012',
+      joinDate: '04/07/2023',
+      twoFactorEnabled: true
+    },
+    { 
+      id: 7, 
+      firstName: 'Robert',
+      middleName: 'William',
+      lastName: 'Taylor',
+      username: 'rtaylor',
+      email: 'robert.taylor@driven.com', 
+      active: true, 
+      lastLogin: '01/18/2024 10:33 AM',
+      phone: '+1 (555) 789-0123',
+      joinDate: '02/14/2023',
+      twoFactorEnabled: false
+    },
+    { 
+      id: 8, 
+      firstName: 'Jennifer',
+      middleName: 'Lynn',
+      lastName: 'Davis',
+      username: 'jdavis',
+      email: 'jennifer.davis@driven.com', 
+      active: false, 
+      lastLogin: '01/05/2024 3:28 PM',
+      phone: '+1 (555) 890-1234',
+      joinDate: '07/19/2023',
+      twoFactorEnabled: true
+    }
   ];
 
   // Organizations mock data
@@ -96,10 +222,182 @@ const CompanyAdminDashboard: React.FC = () => {
     setDisplayedOrgs(prev => prev + 10);
   };
 
+  // Filter driven users based on search and filters
+  const filteredUsers = mockDrivenUsers.filter(user => {
+    const matchesSearch = `${user.firstName} ${user.lastName}`.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+                         user.email.toLowerCase().includes(userSearchQuery.toLowerCase());
+    
+    const matchesStatus = userStatusFilter === 'all' || 
+                         (userStatusFilter === 'active' && user.active) ||
+                         (userStatusFilter === 'inactive' && !user.active);
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  // Get visible users based on display count
+  const visibleUsers = filteredUsers.slice(0, displayedUsers);
+
+  // Load more users handler
+  const handleLoadMoreUsers = () => {
+    setDisplayedUsers(prev => prev + 10);
+  };
+
   // Reset pagination when search changes
   React.useEffect(() => {
     setDisplayedOrgs(10);
   }, [orgSearchQuery]);
+
+  // Reset user pagination when filters change
+  React.useEffect(() => {
+    setDisplayedUsers(10);
+  }, [userSearchQuery, userStatusFilter]);
+
+  // Handle edit user
+  const handleEditUser = (user: any) => {
+    console.log('Edit user clicked:', user);
+    setSelectedUserId(user.id);
+    setUserAccountActive(user.active); // Initialize with user's current status
+    setUserTwoFactorEnabled(user.twoFactorEnabled); // Initialize with user's current 2FA status
+    setIsTransitioning(true);
+    setActiveNavItem('edit-user');
+    
+    setTimeout(() => {
+      setCurrentView('edit-user');
+      setIsTransitioning(false);
+    }, 300);
+  };
+
+  // Handle save edited user
+  const handleSaveEditedUser = (updatedUser: any) => {
+    // In a real app, this would make an API call
+    console.log('Saving updated user:', updatedUser);
+    
+    // Navigate back to users list
+    setSelectedUserId(null);
+    setIsTransitioning(true);
+    setActiveNavItem('driven-users');
+    
+    setTimeout(() => {
+      setCurrentView('driven-users');
+      setIsTransitioning(false);
+    }, 300);
+    
+    // Show success message
+    alert(`User "${updatedUser.firstName} ${updatedUser.lastName}" updated successfully!`);
+  };
+
+  // Handle cancel edit
+  const handleCancelEdit = () => {
+    setSelectedUserId(null);
+    setIsTransitioning(true);
+    setActiveNavItem('driven-users');
+    
+    setTimeout(() => {
+      setCurrentView('driven-users');
+      setIsTransitioning(false);
+    }, 300);
+  };
+  
+  // Handle reset password
+  const handleResetPassword = (user: any) => {
+    // In a real app, this would make an API call to send reset email
+    console.log('Sending password reset email to:', user.email);
+    
+    // Show success message
+    alert(`Password reset email sent to ${user.email}!\n\nThe user will receive instructions to reset their password.`);
+  };
+
+  // Handle account status toggle with warning
+  const handleAccountStatusToggle = () => {
+    if (userAccountActive) {
+      // User is trying to deactivate account, show warning
+      setShowInactiveWarning(true);
+    } else {
+      // User is activating account, no warning needed
+      setUserAccountActive(true);
+    }
+  };
+
+  // Handle 2FA toggle
+  const handleTwoFactorToggle = () => {
+    setUserTwoFactorEnabled(!userTwoFactorEnabled);
+  };
+
+  // Handle add driven user
+  const handleAddDrivenUser = () => {
+    setIsTransitioning(true);
+    setActiveNavItem('add-driven-user');
+    
+    setTimeout(() => {
+      setCurrentView('add-driven-user');
+      setIsTransitioning(false);
+    }, 300);
+  };
+
+  // Handle save driven user
+  const handleSaveDrivenUser = async (userData: any) => {
+    try {
+      // In a real app, this would make an API call to create the user
+      console.log('Creating new Driven user:', userData);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Navigate back to driven users list
+      setIsTransitioning(true);
+      setActiveNavItem('driven-users');
+      
+      setTimeout(() => {
+        setCurrentView('driven-users');
+        setIsTransitioning(false);
+      }, 300);
+      
+      // Show success message
+      alert(`Driven employee "${userData.firstName} ${userData.lastName}" created successfully!\n\nA welcome email with login instructions will be sent to ${userData.email}`);
+    } catch (error) {
+      console.error('Error creating driven user:', error);
+      throw error; // Re-throw to let the form handle the error
+    }
+  };
+
+  // Handle save user profile
+  const handleSaveUserProfile = async (userData: any) => {
+    try {
+      // In a real app, this would make an API call to update the user profile
+      console.log('Updating user profile:', userData);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Navigate back to dashboard
+      setIsTransitioning(true);
+      setActiveNavItem('dashboard');
+      
+      setTimeout(() => {
+        setCurrentView('dashboard');
+        setIsTransitioning(false);
+      }, 300);
+      
+      // Show success message (in real app, use proper notification system)
+      alert('Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile. Please try again.');
+    }
+  };
+
+  // Confirm account deactivation
+  const confirmAccountDeactivation = () => {
+    setUserAccountActive(false);
+    setShowInactiveWarning(false);
+    console.log('Account deactivated for user:', selectedUserId);
+  };
+
+  // Cancel account deactivation
+  const cancelAccountDeactivation = () => {
+    setShowInactiveWarning(false);
+    // Keep the checkbox checked since user cancelled
+  };
 
   // Sample platform metrics
   const platformMetrics = {
@@ -697,7 +995,7 @@ return;
       case 'driven-users':
         return (
           <div style={{ ...contentStyle, display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {/* Driven Users List */}
+            {/* Driven Users Management */}
             <div style={{
               backgroundColor: currentTheme.cardBg,
               borderRadius: '16px',
@@ -705,120 +1003,946 @@ return;
               border: `1px solid ${currentTheme.border}`,
               overflow: 'auto'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-                <h2 style={{ color: currentTheme.textPrimary, margin: 0, fontSize: '20px', fontWeight: '600' }}>
-                  Driven Users
-                </h2>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    backgroundColor: currentTheme.primary + '20',
+                    borderRadius: '12px',
+                    padding: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <Shield style={{ color: currentTheme.primary, width: '24px', height: '24px' }} />
+                  </div>
+                  <div>
+                    <h2 style={{ color: currentTheme.textPrimary, margin: 0, fontSize: '20px', fontWeight: '600' }}>
+                      Driven Employee Access ({filteredUsers.length})
+                    </h2>
+                    <p style={{ color: currentTheme.textSecondary, margin: 0, fontSize: '14px' }}>
+                      Manage platform administrators and support staff
+                    </p>
+                  </div>
+                </div>
                 <button
+                  onClick={handleAddDrivenUser}
                   style={{
                     backgroundColor: currentTheme.primary,
                     color: 'white',
                     border: 'none',
+                    padding: '12px 20px',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = `0 4px 12px ${currentTheme.primary}40`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <Plus size={16} />
+                  Add Driven User
+                </button>
+              </div>
+
+              {/* Quick Stats */}
+              <div style={{
+                marginBottom: '24px',
+                padding: '20px',
+                backgroundColor: currentTheme.background,
+                borderRadius: '12px',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: '16px'
+              }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ color: currentTheme.textPrimary, fontSize: '24px', fontWeight: 'bold' }}>
+                    {mockDrivenUsers.filter(u => u.active).length}
+                  </div>
+                  <div style={{ color: currentTheme.textSecondary, fontSize: '12px' }}>Active Users</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ color: currentTheme.textPrimary, fontSize: '24px', fontWeight: 'bold' }}>
+                    {mockDrivenUsers.length}
+                  </div>
+                  <div style={{ color: currentTheme.textSecondary, fontSize: '12px' }}>Total Employees</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ color: currentTheme.success, fontSize: '24px', fontWeight: 'bold' }}>
+                    {mockDrivenUsers.filter(u => u.twoFactorEnabled).length}
+                  </div>
+                  <div style={{ color: currentTheme.textSecondary, fontSize: '12px' }}>2FA Enabled</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ color: currentTheme.textPrimary, fontSize: '24px', fontWeight: 'bold' }}>
+                    {mockDrivenUsers.filter(u => u.lastLogin.includes('01/20/2024') || u.lastLogin.includes('01/19/2024')).length}
+                  </div>
+                  <div style={{ color: currentTheme.textSecondary, fontSize: '12px' }}>Recent Logins (48hrs)</div>
+                </div>
+              </div>
+
+              {/* Search and Filters */}
+              <div style={{ marginBottom: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                {/* Search Bar */}
+                <div style={{ position: 'relative', flex: '1', minWidth: '300px' }}>
+                  <Search size={16} style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: currentTheme.textSecondary
+                  }} />
+                  <input
+                    type="text"
+                    placeholder="Search by name or email..."
+                    value={userSearchQuery}
+                    onChange={(e) => setUserSearchQuery(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px 12px 12px 40px',
+                      border: `1px solid ${currentTheme.border}`,
+                      borderRadius: '10px',
+                      backgroundColor: currentTheme.background,
+                      color: currentTheme.textPrimary,
+                      fontSize: '14px',
+                      transition: 'all 0.2s ease'
+                    }}
+                  />
+                </div>
+                
+                {/* Status Filter */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Filter size={16} style={{ color: currentTheme.textSecondary }} />
+                  <select
+                    value={userStatusFilter}
+                    onChange={(e) => setUserStatusFilter(e.target.value)}
+                    style={{
+                      padding: '8px 12px',
+                      border: `1px solid ${currentTheme.border}`,
+                      borderRadius: '8px',
+                      backgroundColor: currentTheme.cardBg,
+                      color: currentTheme.textPrimary,
+                      fontSize: '14px',
+                      minWidth: '120px'
+                    }}
+                  >
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
+              
+              {/* Enhanced Table Container */}
+              <div style={{ minWidth: '900px' }}>
+                {/* Users Table Header */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '50px 2fr 2fr 1.8fr 1fr 1fr 120px',
+                  gap: '16px',
+                  padding: '16px 0',
+                  borderBottom: `2px solid ${currentTheme.border}`,
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  color: currentTheme.textSecondary
+                }}>
+                  <div></div>
+                  <div>User</div>
+                  <div>Contact</div>
+                  <div>Last Login</div>
+                  <div style={{ textAlign: 'center' }}>2FA</div>
+                  <div>Status</div>
+                  <div style={{ textAlign: 'center' }}>Actions</div>
+                </div>
+
+                {/* Enhanced Users Data */}
+                {visibleUsers.map((user) => (
+                  <div key={user.id} style={{
+                    display: 'grid',
+                    gridTemplateColumns: '50px 2fr 2fr 1.8fr 1fr 1fr 120px',
+                    gap: '16px',
+                    padding: '20px 0',
+                    borderBottom: `1px solid ${currentTheme.border}`,
+                    alignItems: 'center',
+                    transition: 'all 0.2s ease'
+                  }}>
+                    {/* Avatar */}
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '12px',
+                      backgroundColor: currentTheme.primary,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: '14px'
+                    }}>
+                      {user.firstName[0] + user.lastName[0]}
+                    </div>
+                    
+                    {/* User Info */}
+                    <div>
+                      <div style={{ color: currentTheme.textPrimary, fontWeight: '600', fontSize: '15px' }}>
+                        {user.firstName} {user.lastName}
+                      </div>
+                      <div style={{ color: currentTheme.textSecondary, fontSize: '13px', marginTop: '2px' }}>
+                        ID: {user.id} • Joined {user.joinDate}
+                      </div>
+                    </div>
+                    
+                    {/* Contact Info */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                        <Mail size={14} style={{ color: currentTheme.textSecondary }} />
+                        <span style={{ color: currentTheme.textPrimary, fontSize: '14px' }}>{user.email}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Phone size={14} style={{ color: currentTheme.textSecondary }} />
+                        <span style={{ color: currentTheme.textSecondary, fontSize: '13px' }}>{user.phone}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Last Login */}
+                    <div style={{ fontSize: '14px' }}>
+                      <div style={{ color: currentTheme.textPrimary, fontWeight: '500' }}>
+                        {user.lastLogin}
+                      </div>
+                    </div>
+                    
+                    {/* 2FA Status */}
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      {user.twoFactorEnabled ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <ShieldCheck size={16} style={{ color: currentTheme.success }} />
+                          <span style={{
+                            color: currentTheme.success,
+                            fontSize: '12px',
+                            fontWeight: '600'
+                          }}>
+                            Enabled
+                          </span>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Shield size={16} style={{ color: currentTheme.danger }} />
+                          <span style={{
+                            color: currentTheme.danger,
+                            fontSize: '12px',
+                            fontWeight: '600'
+                          }}>
+                            Disabled
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Status */}
+                    <div>
+                      <span style={{
+                        padding: '6px 10px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        backgroundColor: user.active ? currentTheme.success + '20' : currentTheme.danger + '20',
+                        color: user.active ? currentTheme.success : currentTheme.danger
+                      }}>
+                        {user.active ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                    
+                    {/* Actions */}
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <button
+                        title="Edit User"
+                        onClick={() => handleEditUser(user)}
+                        style={{
+                          backgroundColor: 'transparent',
+                          border: `1px solid ${currentTheme.border}`,
+                          color: currentTheme.textPrimary,
+                          padding: '8px 16px',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = currentTheme.primary;
+                          e.currentTarget.style.color = 'white';
+                          e.currentTarget.style.borderColor = currentTheme.primary;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = currentTheme.textPrimary;
+                          e.currentTarget.style.borderColor = currentTheme.border;
+                        }}
+                      >
+                        <Edit3 size={14} />
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Enhanced Load More Button */}
+                {filteredUsers.length > visibleUsers.length && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    padding: '24px',
+                    borderTop: `1px solid ${currentTheme.border}`
+                  }}>
+                    <button
+                      onClick={handleLoadMoreUsers}
+                      style={{
+                        padding: '12px 24px',
+                        backgroundColor: currentTheme.primary + '10',
+                        border: `2px solid ${currentTheme.primary}`,
+                        borderRadius: '12px',
+                        color: currentTheme.primary,
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        transition: 'all 0.2s ease',
+                        minWidth: '200px',
+                        justifyContent: 'center'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = currentTheme.primary;
+                        e.currentTarget.style.color = 'white';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                        e.currentTarget.style.boxShadow = `0 4px 12px ${currentTheme.primary}30`;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = currentTheme.primary + '10';
+                        e.currentTarget.style.color = currentTheme.primary;
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <Plus size={16} />
+                      Load More ({filteredUsers.length - visibleUsers.length} remaining)
+                    </button>
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
+        );
+
+      case 'edit-user':
+        const userToEdit = mockDrivenUsers.find(user => user.id === selectedUserId);
+        if (!userToEdit) {
+          // If user not found, go back to users list
+          setCurrentView('driven-users');
+          return null;
+        }
+        
+        return (
+          <div style={{ ...contentStyle, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* Edit User Page */}
+            <div style={{
+              backgroundColor: currentTheme.cardBg,
+              borderRadius: '16px',
+              padding: '32px',
+              border: `1px solid ${currentTheme.border}`
+            }}>
+              {/* Header with Back Button */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+                <button
+                  onClick={handleCancelEdit}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: `1px solid ${currentTheme.border}`,
+                    color: currentTheme.textPrimary,
                     padding: '8px 16px',
                     borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  ← Back to Users
+                </button>
+                <div>
+                  <h2 style={{ color: currentTheme.textPrimary, margin: '0 0 4px 0', fontSize: '24px', fontWeight: '600' }}>
+                    Edit User: {userToEdit.firstName} {userToEdit.lastName}
+                  </h2>
+                  <p style={{ color: currentTheme.textSecondary, margin: 0, fontSize: '16px' }}>
+                    Update user information and settings
+                  </p>
+                </div>
+              </div>
+
+              {/* User Profile Section */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'auto 1fr', 
+                gap: '24px', 
+                marginBottom: '32px',
+                alignItems: 'center',
+                padding: '24px',
+                backgroundColor: currentTheme.background,
+                borderRadius: '12px'
+              }}>
+                {/* Avatar */}
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '16px',
+                  backgroundColor: currentTheme.primary,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  fontSize: '24px'
+                }}>
+                  {userToEdit.firstName[0] + userToEdit.lastName[0]}
+                </div>
+                
+                {/* User Info */}
+                <div>
+                  <h3 style={{ color: currentTheme.textPrimary, margin: '0 0 8px 0', fontSize: '20px', fontWeight: '600' }}>
+                    {userToEdit.firstName} {userToEdit.lastName}
+                  </h3>
+                  <p style={{ color: currentTheme.textSecondary, margin: '0 0 4px 0', fontSize: '16px' }}>
+                    {userToEdit.email}
+                  </p>
+                  <p style={{ color: currentTheme.textSecondary, margin: '0 0 8px 0', fontSize: '14px' }}>
+                    User ID: {userToEdit.id} • Joined: {userToEdit.joinDate}
+                  </p>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <span style={{
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      backgroundColor: userToEdit.active ? currentTheme.success + '20' : currentTheme.danger + '20',
+                      color: userToEdit.active ? currentTheme.success : currentTheme.danger
+                    }}>
+                      {userToEdit.active ? 'Active' : 'Inactive'}
+                    </span>
+                    <span style={{
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      backgroundColor: userToEdit.twoFactorEnabled ? currentTheme.success + '20' : currentTheme.danger + '20',
+                      color: userToEdit.twoFactorEnabled ? currentTheme.success : currentTheme.danger
+                    }}>
+                      2FA {userToEdit.twoFactorEnabled ? 'Enabled' : 'Disabled'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Edit Form */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                {/* Personal Information Section */}
+                <div>
+                  <h3 style={{ color: currentTheme.textPrimary, margin: '0 0 20px 0', fontSize: '18px', fontWeight: '600' }}>
+                    Personal Information
+                  </h3>
+                  
+                  {/* Name Fields Row */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                  
+                  {/* First Name Field */}
+                  <div>
+                    <label style={{ color: currentTheme.textPrimary, fontSize: '14px', fontWeight: '500', marginBottom: '8px', display: 'block' }}>
+                      First Name *
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue={userToEdit.firstName}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: `1px solid ${currentTheme.border}`,
+                        borderRadius: '8px',
+                        backgroundColor: currentTheme.cardBg,
+                        color: currentTheme.textPrimary,
+                        fontSize: '14px'
+                      }}
+                    />
+                  </div>
+
+                  {/* Middle Name Field */}
+                  <div>
+                    <label style={{ color: currentTheme.textPrimary, fontSize: '14px', fontWeight: '500', marginBottom: '8px', display: 'block' }}>
+                      Middle Name
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue={userToEdit.middleName}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: `1px solid ${currentTheme.border}`,
+                        borderRadius: '8px',
+                        backgroundColor: currentTheme.cardBg,
+                        color: currentTheme.textPrimary,
+                        fontSize: '14px'
+                      }}
+                    />
+                  </div>
+
+                  {/* Last Name Field */}
+                  <div>
+                    <label style={{ color: currentTheme.textPrimary, fontSize: '14px', fontWeight: '500', marginBottom: '8px', display: 'block' }}>
+                      Last Name *
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue={userToEdit.lastName}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: `1px solid ${currentTheme.border}`,
+                        borderRadius: '8px',
+                        backgroundColor: currentTheme.cardBg,
+                        color: currentTheme.textPrimary,
+                        fontSize: '14px'
+                      }}
+                    />
+                  </div>
+                </div>
+                
+                {/* Contact Information Row */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                  {/* Username Field */}
+                  <div>
+                    <label style={{ color: currentTheme.textPrimary, fontSize: '14px', fontWeight: '500', marginBottom: '8px', display: 'block' }}>
+                      Username *
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue={userToEdit.username}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: `1px solid ${currentTheme.border}`,
+                        borderRadius: '8px',
+                        backgroundColor: currentTheme.cardBg,
+                        color: currentTheme.textPrimary,
+                        fontSize: '14px'
+                      }}
+                    />
+                  </div>
+
+                  {/* Email Field */}
+                  <div>
+                    <label style={{ color: currentTheme.textPrimary, fontSize: '14px', fontWeight: '500', marginBottom: '8px', display: 'block' }}>
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      defaultValue={userToEdit.email}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: `1px solid ${currentTheme.border}`,
+                        borderRadius: '8px',
+                        backgroundColor: currentTheme.cardBg,
+                        color: currentTheme.textPrimary,
+                        fontSize: '14px'
+                      }}
+                    />
+                  </div>
+
+                  {/* Phone Field */}
+                  <div>
+                    <label style={{ color: currentTheme.textPrimary, fontSize: '14px', fontWeight: '500', marginBottom: '8px', display: 'block' }}>
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      defaultValue={userToEdit.phone}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: `1px solid ${currentTheme.border}`,
+                        borderRadius: '8px',
+                        backgroundColor: currentTheme.cardBg,
+                        color: currentTheme.textPrimary,
+                        fontSize: '14px'
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+                {/* Account Settings Section */}
+                <div>
+                  <h3 style={{ color: currentTheme.textPrimary, margin: '0 0 20px 0', fontSize: '18px', fontWeight: '600' }}>
+                    Account Settings
+                  </h3>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  
+                    {/* Status Section */}
+                  <div style={{
+                    padding: '20px',
+                    border: `1px solid ${currentTheme.border}`,
+                    borderRadius: '12px',
+                    backgroundColor: currentTheme.background
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                      <h4 style={{ color: currentTheme.textPrimary, margin: 0, fontSize: '16px', fontWeight: '600' }}>
+                        Account Status
+                      </h4>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        backgroundColor: userAccountActive ? `${currentTheme.success}15` : `${currentTheme.danger}15`,
+                        border: `1px solid ${userAccountActive ? currentTheme.success : currentTheme.danger}30`
+                      }}>
+                        <div style={{
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          backgroundColor: userAccountActive ? currentTheme.success : currentTheme.danger
+                        }} />
+                        <span style={{ 
+                          color: userAccountActive ? currentTheme.success : currentTheme.danger,
+                          fontSize: '12px', 
+                          fontWeight: '600',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        }}>
+                          {userAccountActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'space-between',
+                      padding: '16px',
+                      backgroundColor: userAccountActive ? `${currentTheme.success}08` : `${currentTheme.danger}08`,
+                      border: `1px solid ${userAccountActive ? currentTheme.success : currentTheme.danger}20`,
+                      borderRadius: '12px'
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ 
+                          color: currentTheme.textPrimary, 
+                          fontSize: '14px', 
+                          fontWeight: '500',
+                          margin: '0 0 4px 0'
+                        }}>
+                          {userAccountActive 
+                            ? 'Full Admin Access' 
+                            : 'Access Restricted'
+                          }
+                        </p>
+                        <p style={{ 
+                          color: currentTheme.textSecondary, 
+                          fontSize: '12px', 
+                          margin: 0,
+                          lineHeight: '1.4'
+                        }}>
+                          {userAccountActive 
+                            ? 'This user can access all admin panel features and manage organizations' 
+                            : 'This user cannot log in or access any admin panel features'
+                          }
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleAccountStatusToggle}
+                        style={{
+                          padding: '12px 20px',
+                          backgroundColor: userAccountActive ? currentTheme.danger : currentTheme.success,
+                          border: 'none',
+                          borderRadius: '10px',
+                          color: 'white',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          minWidth: '160px',
+                          justifyContent: 'center',
+                          boxShadow: `0 2px 8px ${userAccountActive ? currentTheme.danger : currentTheme.success}30`
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = `0 6px 20px ${userAccountActive ? currentTheme.danger : currentTheme.success}40`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = `0 2px 8px ${userAccountActive ? currentTheme.danger : currentTheme.success}30`;
+                        }}
+                      >
+                        {userAccountActive ? (
+                          <>
+                            <ShieldCheck size={16} />
+                            Deactivate
+                          </>
+                        ) : (
+                          <>
+                            <Shield size={16} />
+                            Activate
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                    {/* 2FA Section */}
+                    <div style={{
+                    padding: '20px',
+                    border: `1px solid ${currentTheme.border}`,
+                    borderRadius: '12px',
+                    backgroundColor: currentTheme.background
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                      <h4 style={{ color: currentTheme.textPrimary, margin: 0, fontSize: '16px', fontWeight: '600' }}>
+                        Two-Factor Authentication
+                      </h4>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        backgroundColor: userTwoFactorEnabled ? `${currentTheme.success}15` : `${currentTheme.warning}15`,
+                        border: `1px solid ${userTwoFactorEnabled ? currentTheme.success : currentTheme.warning}30`
+                      }}>
+                        <div style={{
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          backgroundColor: userTwoFactorEnabled ? currentTheme.success : currentTheme.warning
+                        }} />
+                        <span style={{ 
+                          color: userTwoFactorEnabled ? currentTheme.success : currentTheme.warning,
+                          fontSize: '12px', 
+                          fontWeight: '600',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        }}>
+                          {userTwoFactorEnabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'space-between',
+                      padding: '16px',
+                      backgroundColor: userTwoFactorEnabled ? `${currentTheme.success}08` : `${currentTheme.warning}08`,
+                      border: `1px solid ${userTwoFactorEnabled ? currentTheme.success : currentTheme.warning}20`,
+                      borderRadius: '12px',
+                      marginBottom: '16px'
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ 
+                          color: currentTheme.textPrimary, 
+                          fontSize: '14px', 
+                          fontWeight: '500',
+                          margin: '0 0 4px 0'
+                        }}>
+                          {userTwoFactorEnabled 
+                            ? 'Enhanced Security Active' 
+                            : 'Basic Security Only'
+                          }
+                        </p>
+                        <p style={{ 
+                          color: currentTheme.textSecondary, 
+                          fontSize: '12px', 
+                          margin: 0,
+                          lineHeight: '1.4'
+                        }}>
+                          {userTwoFactorEnabled 
+                            ? 'Account is protected with two-factor authentication for enhanced security' 
+                            : 'Enable 2FA to add an extra layer of security to this user account'
+                          }
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleTwoFactorToggle}
+                        style={{
+                          padding: '12px 20px',
+                          backgroundColor: userTwoFactorEnabled ? currentTheme.warning : currentTheme.success,
+                          border: 'none',
+                          borderRadius: '10px',
+                          color: 'white',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          minWidth: '140px',
+                          justifyContent: 'center',
+                          boxShadow: `0 2px 8px ${userTwoFactorEnabled ? currentTheme.warning : currentTheme.success}30`
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = `0 6px 20px ${userTwoFactorEnabled ? currentTheme.warning : currentTheme.success}40`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = `0 2px 8px ${userTwoFactorEnabled ? currentTheme.warning : currentTheme.success}30`;
+                        }}
+                      >
+                        {userTwoFactorEnabled ? (
+                          <>
+                            <Shield size={16} />
+                            Disable 2FA
+                          </>
+                        ) : (
+                          <>
+                            <ShieldCheck size={16} />
+                            Enable 2FA
+                          </>
+                        )}
+                      </button>
+                    </div>
+                      
+                      {/* Reset Password Button */}
+                      <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${currentTheme.border}` }}>
+                        <button
+                          onClick={() => handleResetPassword(userToEdit)}
+                          style={{
+                            padding: '8px 16px',
+                            border: `1px solid ${currentTheme.primary}`,
+                            borderRadius: '6px',
+                            backgroundColor: 'transparent',
+                            color: currentTheme.primary,
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}
+                        >
+                          <Mail style={{ width: '14px', height: '14px' }} />
+                          Send Password Reset Email
+                        </button>
+                        <p style={{ color: currentTheme.textSecondary, fontSize: '11px', margin: '6px 0 0 0' }}>
+                          User will receive an email to reset their password
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Last Login Info - Full Width */}
+                  <div style={{
+                    padding: '20px',
+                    backgroundColor: currentTheme.background,
+                    borderRadius: '12px',
+                    border: `1px solid ${currentTheme.border}`,
+                    marginTop: '16px',
+                    gridColumn: '1 / -1'
+                  }}>
+                    <h4 style={{ color: currentTheme.textPrimary, margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600' }}>
+                      Last Login Activity
+                    </h4>
+                    <p style={{ color: currentTheme.textSecondary, margin: 0, fontSize: '14px' }}>
+                      {userToEdit.lastLogin}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '16px', marginTop: '32px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={handleCancelEdit}
+                  style={{
+                    padding: '12px 24px',
+                    border: `1px solid ${currentTheme.border}`,
+                    borderRadius: '8px',
+                    backgroundColor: 'transparent',
+                    color: currentTheme.textPrimary,
                     cursor: 'pointer',
                     fontSize: '14px',
                     fontWeight: '500'
                   }}
                 >
-                  + Add User
+                  Cancel
                 </button>
-              </div>
-              
-              {/* Table Container */}
-              <div style={{ minWidth: '700px' }}>
-                {/* Users Table Header */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2fr 1.5fr 1fr 1fr 1fr',
-                  gap: '16px',
-                  padding: '16px 0',
-                  borderBottom: `1px solid ${currentTheme.border}`,
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  color: currentTheme.textSecondary
-                }}>
-                <div>Name</div>
-                <div>Email</div>
-                <div>Role</div>
-                <div>Status</div>
-                <div>Actions</div>
-              </div>
-
-              {/* Sample Users Data */}
-              {[
-                { name: 'John Smith', email: 'john@driven.com', role: 'Admin', active: true },
-                { name: 'Sarah Johnson', email: 'sarah@driven.com', role: 'Manager', active: true },
-                { name: 'Mike Wilson', email: 'mike@driven.com', role: 'Support', active: false },
-                { name: 'Lisa Brown', email: 'lisa@driven.com', role: 'Admin', active: true },
-                { name: 'David Lee', email: 'david@driven.com', role: 'Analyst', active: true }
-              ].map((user, index) => (
-                <div key={index} style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2fr 1.5fr 1fr 1fr 1fr',
-                  gap: '16px',
-                  padding: '20px 0',
-                  borderBottom: `1px solid ${currentTheme.border}`,
-                  alignItems: 'center'
-                }}>
-                  <div style={{ color: currentTheme.textPrimary, fontWeight: '500' }}>
-                    {user.name}
-                  </div>
-                  <div style={{ color: currentTheme.textSecondary, fontSize: '14px' }}>
-                    {user.email}
-                  </div>
-                  <div style={{ color: currentTheme.textPrimary }}>
-                    {user.role}
-                  </div>
-                  <div>
-                    <span style={{
-                      padding: '4px 8px',
-                      borderRadius: '12px',
-                      fontSize: '12px',
-                      fontWeight: '500',
-                      backgroundColor: user.active ? currentTheme.success + '20' : currentTheme.danger + '20',
-                      color: user.active ? currentTheme.success : currentTheme.danger
-                    }}>
-                      {user.active ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  <div>
-                    <button
-                      style={{
-                        backgroundColor: 'transparent',
-                        border: `1px solid ${currentTheme.border}`,
-                        color: currentTheme.textPrimary,
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '12px'
-                      }}
-                    >
-                      Manage
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              {/* Load More Button */}
-              <div style={{ marginTop: '20px', textAlign: 'center' }}>
                 <button
+                  onClick={() => handleSaveEditedUser(userToEdit)}
                   style={{
-                    backgroundColor: 'transparent',
-                    border: `1px solid ${currentTheme.border}`,
-                    color: currentTheme.textPrimary,
-                    padding: '10px 20px',
+                    padding: '12px 24px',
+                    border: 'none',
                     borderRadius: '8px',
+                    backgroundColor: currentTheme.primary,
+                    color: 'white',
                     cursor: 'pointer',
-                    fontSize: '14px'
+                    fontSize: '14px',
+                    fontWeight: '500'
                   }}
                 >
-                  Load More Users
+                  Save Changes
                 </button>
-              </div>
               </div>
             </div>
           </div>
+        );
+
+      case 'add-driven-user':
+        return (
+          <AddDrivenUser 
+            onBack={() => {
+              setIsTransitioning(true);
+              setActiveNavItem('driven-users');
+              setTimeout(() => {
+                setCurrentView('driven-users');
+                setIsTransitioning(false);
+              }, 300);
+            }}
+            onSave={handleSaveDrivenUser}
+          />
+        );
+
+      case 'profile':
+        return (
+          <UserProfileEdit 
+            onBack={() => {
+              setIsTransitioning(true);
+              setActiveNavItem('dashboard');
+              setTimeout(() => {
+                setCurrentView('dashboard');
+                setIsTransitioning(false);
+              }, 300);
+            }}
+            onSave={handleSaveUserProfile}
+          />
         );
 
       default:
@@ -1070,9 +2194,14 @@ return;
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <button 
                     onClick={() => {
-                      // Edit profile functionality - placeholder for now
-                      alert('Edit Profile functionality would be implemented here');
+                      setIsTransitioning(true);
+                      setActiveNavItem('profile');
                       setIsProfileOpen(false);
+                      
+                      setTimeout(() => {
+                        setCurrentView('profile');
+                        setIsTransitioning(false);
+                      }, 300);
                     }}
                     style={{ 
                       width: '100%',
@@ -1244,6 +2373,127 @@ return;
           {renderMainContent()}
         </div>
       </div>
+
+      {/* Account Deactivation Warning Dialog */}
+      {showInactiveWarning && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10001
+        }} onClick={() => setShowInactiveWarning(false)}>
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: currentTheme.background,
+              borderRadius: '12px',
+              padding: '32px',
+              maxWidth: '480px',
+              width: '90%',
+              border: `1px solid ${currentTheme.border}`,
+              boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
+            }}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                backgroundColor: `${currentTheme.warning}20`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <AlertTriangle style={{ width: '24px', height: '24px', color: currentTheme.warning }} />
+              </div>
+              <div>
+                <h3 style={{ color: currentTheme.textPrimary, margin: 0, fontSize: '20px', fontWeight: '600' }}>
+                  Deactivate User Account
+                </h3>
+                <p style={{ color: currentTheme.textSecondary, margin: '4px 0 0 0', fontSize: '14px' }}>
+                  This action will restrict user access
+                </p>
+              </div>
+            </div>
+
+            {/* Warning Message */}
+            <div style={{ 
+              padding: '20px', 
+              backgroundColor: `${currentTheme.warning}10`, 
+              border: `1px solid ${currentTheme.warning}30`,
+              borderRadius: '8px',
+              marginBottom: '24px'
+            }}>
+              <p style={{ 
+                color: currentTheme.textPrimary, 
+                fontSize: '14px', 
+                lineHeight: '1.5',
+                margin: 0 
+              }}>
+                <strong>Warning:</strong> Making this account inactive will prevent the user from accessing the admin panel. 
+                The user will be logged out of all active sessions and will not be able to sign in until the account is reactivated.
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={cancelAccountDeactivation}
+                style={{
+                  padding: '12px 24px',
+                  border: `1px solid ${currentTheme.border}`,
+                  borderRadius: '8px',
+                  backgroundColor: currentTheme.background,
+                  color: currentTheme.textPrimary,
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = `${currentTheme.textSecondary}10`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = currentTheme.background;
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmAccountDeactivation}
+                style={{
+                  padding: '12px 24px',
+                  border: `1px solid ${currentTheme.warning}`,
+                  borderRadius: '8px',
+                  backgroundColor: currentTheme.warning,
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = currentTheme.danger;
+                  e.currentTarget.style.borderColor = currentTheme.danger;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = currentTheme.warning;
+                  e.currentTarget.style.borderColor = currentTheme.warning;
+                }}
+              >
+                Deactivate Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Theme Selector */}
       {isThemeSelectorOpen && (
