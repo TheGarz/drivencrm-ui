@@ -68,7 +68,7 @@ interface NavigationItem {
 
 type ViewType = 'dashboard' | 'integrations' | 'metrics' | 'users' | 'reviews' | 'settings';
 
-const DrivenPestControlDashboard: React.FC = () => {
+const OrganizationDashboard: React.FC = () => {
   // Theme system
   const { theme, currentTheme, toggleTheme } = useTheme();
   
@@ -102,7 +102,7 @@ const DrivenPestControlDashboard: React.FC = () => {
     { name: 'Google Reviews', status: 'connected', lastSync: '5 min ago', type: 'Reviews', icon: Star },
     { name: 'Route4Me GPS', status: 'connected', lastSync: '1 min ago', type: 'GPS', icon: Navigation },
     { name: 'CallRail Phone', status: 'connected', lastSync: '3 min ago', type: 'Phone', icon: Phone },
-    { name: 'PestPac CRM', status: 'pending', lastSync: 'Never', type: 'CRM', icon: Database },
+    { name: 'FieldEdge CRM', status: 'pending', lastSync: 'Never', type: 'CRM', icon: Database },
     { name: 'Yelp Reviews', status: 'disconnected', lastSync: '2 days ago', type: 'Reviews', icon: MessageSquare }
   ];
 
@@ -978,4 +978,4 @@ const DrivenPestControlDashboard: React.FC = () => {
   );
 };
 
-export default DrivenPestControlDashboard;
+export default OrganizationDashboard;

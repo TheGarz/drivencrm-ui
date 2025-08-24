@@ -1,5 +1,5 @@
 import { useAuth } from '../auth/AuthContext';
-import DrivenPestControlDashboard from './DrivenPestControlDashboard';
+import OrganizationDashboard from './OrganizationDashboard';
 import CompanyAdminDashboard from './CompanyAdminDashboard';
 
 // Role-based dashboard router that determines which dashboard to show
@@ -15,8 +15,8 @@ export const RoleBasedDashboard = () => {
     return <CompanyAdminDashboard />;
   }
 
-  // All other roles get the standard pest control dashboard with role-based navigation
-  return <DrivenPestControlDashboard />;
+  // All other roles get the organization dashboard with role-based navigation
+  return <OrganizationDashboard />;
 };
 
 export default RoleBasedDashboard;
