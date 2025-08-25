@@ -1,20 +1,14 @@
 // Organizations Page Component  
-// Extracted from CompanyAdminDashboard to maintain exact styling and functionality
+// Updated to use React Router navigation directly
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../theme';
 import { Search, Plus } from 'lucide-react';
 import { useOrganizationManagement } from '../hooks/useOrganizationManagement';
 
-interface OrganizationsPageProps {
-  onAddOrganization: () => void;
-  onManageOrganization: (orgId: number) => void;
-}
-
-const OrganizationsPage: React.FC<OrganizationsPageProps> = ({
-  onAddOrganization,
-  onManageOrganization
-}) => {
+const OrganizationsPage: React.FC = () => {
+  const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const {
     orgSearchQuery,
@@ -31,9 +25,13 @@ const OrganizationsPage: React.FC<OrganizationsPageProps> = ({
     alert(`Login as ${orgName} functionality would be implemented here`);
   };
 
+  const handleAddOrganization = () => {
+    navigate('/organizations/add');
+  };
+
   const handleManageClick = (orgId: number) => {
     setSelectedOrganizationId(orgId);
-    onManageOrganization(orgId);
+    navigate(`/organizations/${orgId}`);
   };
 
   return (
@@ -73,7 +71,7 @@ const OrganizationsPage: React.FC<OrganizationsPageProps> = ({
             Organizations ({filteredOrganizations.length})
           </h2>
           <button
-            onClick={onAddOrganization}
+            onClick={handleAddOrganization}
             style={{
               backgroundColor: currentTheme.primary,
               color: 'white',

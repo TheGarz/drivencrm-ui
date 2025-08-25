@@ -1,7 +1,9 @@
 // Admin Layout Component
 // Extracted from CompanyAdminDashboard to maintain exact styling and behavior
+// Updated to work with React Router
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../theme';
 import { useAuth } from '../auth/AuthContext';
 import { DrivenBrandLogo } from '../components/DrivenBrandLogo';
@@ -10,15 +12,16 @@ import {
   BarChart3, 
   Users, 
   Building2,
-  Settings,
   LogOut,
   ChevronDown,
   Palette,
   UserCheck,
-  Edit3
+  Edit3,
+  Settings,
+  Moon,
+  Sun
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { ViewType } from '../hooks/useAdminNavigation';
 import { 
   getSidebarStyles, 
   getNavigationStyles, 
@@ -34,47 +37,76 @@ interface NavigationItem {
   text: string;
   description: string;
   badge?: string;
+  path: string;
 }
 
-interface AdminLayoutProps {
-  children: React.ReactNode;
-  currentView: ViewType;
-  activeNavItem: ViewType;
-  isTransitioning: boolean;
-  isProfileOpen: boolean;
-  isThemeSelectorOpen: boolean;
-  onNavClick: (viewType: ViewType) => void;
-  onToggleProfileDropdown: () => void;
-  onCloseProfileDropdown: () => void;
-  onOpenThemeSelector: () => void;
-  onCloseThemeSelector: () => void;
-  onNavigateToProfile: () => void;
-}
-
-const AdminLayout: React.FC<AdminLayoutProps> = ({
-  children,
-  currentView,
-  activeNavItem,
-  isTransitioning,
-  isProfileOpen,
-  isThemeSelectorOpen,
-  onNavClick,
-  onToggleProfileDropdown,
-  onCloseProfileDropdown,
-  onOpenThemeSelector,
-  onCloseThemeSelector,
-  onNavigateToProfile
-}) => {
-  const { currentTheme, toggleTheme } = useTheme();
+const AdminLayout: React.FC = () => {
+  const { theme, currentTheme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // State management for UI interactions
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
 
-  // Company Admin Navigation - exact same as original
+  // Company Admin Navigation with router paths
   const navigationItems: NavigationItem[] = [
-    { id: 'dashboard', icon: BarChart3, text: 'Dashboard', description: 'Platform Overview' },
-    { id: 'organizations', icon: Building2, text: 'Organizations', description: 'Manage Client Organizations' },
-    { id: 'driven-users', icon: Users, text: 'Driven Users', description: 'Platform User Management' },
-    { id: 'settings', icon: Settings, text: 'Settings', description: 'Platform Configuration' }
+    { id: 'dashboard', icon: BarChart3, text: 'Dashboard', description: 'Platform Overview', path: '/dashboard' },
+    { id: 'organizations', icon: Building2, text: 'Organizations', description: 'Manage Client Organizations', path: '/organizations' },
+    { id: 'driven-users', icon: Users, text: 'Driven Users', description: 'Platform User Management', path: '/driven-users' }
   ];
+  
+  // Get active nav item from current URL path
+  const getActiveNavFromPath = (pathname: string): string => {
+    if (pathname.includes('/organizations')) return 'organizations';
+    if (pathname.includes('/driven-users')) return 'driven-users';
+    return 'dashboard';
+  };
+
+  const activeNavItem = getActiveNavFromPath(location.pathname);
+
+  // Navigation handlers
+  const handleNavClick = (path: string): void => {
+    setIsTransitioning(true);
+    navigate(path);
+    setTimeout(() => setIsTransitioning(false), 300);
+  };
+
+  const handleNavigateToProfile = () => {
+    setIsProfileOpen(false);
+    navigate('/profile');
+  };
+
+  const handleToggleTheme = (): void => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      toggleTheme();
+      setTimeout(() => setIsTransitioning(false), 400);
+    }, 200);
+  };
+
+  const handleLogout = (): void => {
+    setIsProfileOpen(false);
+    logout();
+  };
+
+  const handleEditProfile = (): void => {
+    setIsProfileOpen(false);
+    navigate('/profile');
+  };
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent): void => {
+      if (isProfileOpen && !(event.target as Element).closest('.profile-dropdown')) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isProfileOpen]);
 
   const sidebarStyles = getSidebarStyles(currentTheme);
   const navigationStyles = getNavigationStyles(currentTheme);
@@ -116,7 +148,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
             return (
               <button
                 key={item.id}
-                onClick={() => onNavClick(item.id as ViewType)}
+                onClick={() => handleNavClick(item.path)}
                 style={navigationStyles.item(isActive)}
               >
                 <div style={navigationStyles.itemContent}>
@@ -137,60 +169,154 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
           })}
         </nav>
 
-        {/* Profile Section - exact same structure and styling */}
+        {/* Profile Section - fixed with conditional rendering */}
         <div style={profileDropdownStyles.container}>
           <div style={{ position: 'relative' }}>
-            {/* Profile Dropdown - exact same positioning and styling */}
-            <div style={profileDropdownStyles.dropdown(isProfileOpen)}>
-              <button
-                onClick={() => {
-                  onNavigateToProfile();
-                  onCloseProfileDropdown();
-                }}
-                style={profileDropdownStyles.dropdownItem}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = profileDropdownStyles.dropdownItemHover.backgroundColor;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                <Edit3 size={16} />
-                Edit Profile
-              </button>
-              <button
-                onClick={() => {
-                  onOpenThemeSelector();
-                  onCloseProfileDropdown();
-                }}
-                style={profileDropdownStyles.dropdownItem}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = profileDropdownStyles.dropdownItemHover.backgroundColor;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
+            {/* Profile Dropdown - conditional rendering like CustomerLayout */}
+            {isProfileOpen && (
+              <div 
+                className="profile-dropdown"
+                style={{ 
+                  position: 'absolute',
+                  bottom: '100%',
+                  left: '16px',
+                  right: '16px',
+                  backgroundColor: currentTheme.cardBg,
+                  border: `1px solid ${currentTheme.border}`,
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                  zIndex: 9000,
+                  marginBottom: '8px',
+                  opacity: 1,
+                  transform: 'translateY(0)'
                 }}
               >
-                <Palette size={16} />
-                Change Theme
-              </button>
-              <button
-                onClick={logout}
-                style={profileDropdownStyles.dropdownItem}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = profileDropdownStyles.dropdownItemHover.backgroundColor;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                <LogOut size={16} />
-                Logout
-              </button>
-            </div>
+                <button 
+                  onClick={() => {
+                    handleToggleTheme();
+                    setIsProfileOpen(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    color: currentTheme.textPrimary,
+                    transition: 'all 0.2s ease',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = currentTheme.primary + '10';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    {theme === 'light' ? (
+                      <Moon style={{ width: '16px', height: '16px' }} />
+                    ) : (
+                      <Sun style={{ color: '#F59E0B', width: '16px', height: '16px' }} />
+                    )}
+                    <span>
+                      Switch to {theme === 'light' ? 'Dark Theme' : 'Light Theme'}
+                    </span>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setIsThemeSelectorOpen(true);
+                    setIsProfileOpen(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    color: currentTheme.textPrimary,
+                    transition: 'all 0.2s ease',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = currentTheme.primary + '10';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <Palette size={16} />
+                  Choose Theme
+                </button>
+                
+                <button
+                  onClick={handleEditProfile}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    color: currentTheme.textPrimary,
+                    transition: 'all 0.2s ease',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = currentTheme.primary + '10';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <Settings size={16} />
+                  Edit Profile
+                </button>
+                
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px',
+                    backgroundColor: '#FEF2F2',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    color: currentTheme.danger,
+                    transition: 'all 0.2s ease',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#FEE2E2';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#FEF2F2';
+                  }}
+                >
+                  <LogOut size={16} />
+                  Sign Out
+                </button>
+              </div>
+            )}
 
             <button
-              onClick={onToggleProfileDropdown}
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
               style={profileDropdownStyles.button}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = profileDropdownStyles.buttonHover.backgroundColor;
@@ -224,10 +350,29 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
         </div>
       </div>
 
-      {/* Content Area - exact same structure and styling */}
+      {/* Main Content */}
       <div style={contentStyles.container}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+            <div>
+              <h1 style={{ color: currentTheme.textPrimary, fontSize: '36px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
+                {activeNavItem === 'dashboard' && 'Admin Dashboard'}
+                {activeNavItem === 'organizations' && 'Organizations'}
+                {activeNavItem === 'driven-users' && 'Driven Users'}
+              </h1>
+              <p style={{ color: currentTheme.textSecondary, fontSize: '18px', margin: 0 }}>
+                {activeNavItem === 'dashboard' && 'Platform overview and management tools'}
+                {activeNavItem === 'organizations' && 'Manage Client Organizations'}
+                {activeNavItem === 'driven-users' && 'Platform User Management'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Area - Rendered by React Router */}
         <div style={contentStyles.content}>
-          {children}
+          <Outlet />
         </div>
       </div>
 
@@ -235,12 +380,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
       {isThemeSelectorOpen && (
         <div 
           style={modalStyles.overlay} 
-          onClick={onCloseThemeSelector}
+          onClick={() => setIsThemeSelectorOpen(false)}
         >
           <div onClick={(e) => e.stopPropagation()}>
             <ThemeSelector 
               isOpen={isThemeSelectorOpen} 
-              onClose={onCloseThemeSelector} 
+              onClose={() => setIsThemeSelectorOpen(false)} 
             />
           </div>
         </div>

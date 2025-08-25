@@ -229,7 +229,8 @@ export const getContentStyles = (currentTheme: Theme, isTransitioning: boolean) 
     marginLeft: LAYOUT_CONSTANTS.content.marginLeft,
     minHeight: LAYOUT_CONSTANTS.content.minHeight,
     backgroundColor: currentTheme.background,
-    color: currentTheme.textPrimary
+    color: currentTheme.textPrimary,
+    padding: '32px'  // Added padding to match CustomerLayout
   },
   content: {
     opacity: isTransitioning ? 0 : 1,

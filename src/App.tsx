@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './theme';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { RoleBasedDashboard } from './components/RoleBasedDashboard';
+import CustomerLayout from './components/layouts/CustomerLayout';
 import { LoginScreen } from './components/LoginScreen';
 import { ForgotPasswordScreen } from './components/ForgotPasswordScreen';
 import { ResetPasswordScreen } from './components/ResetPasswordScreen';
@@ -146,7 +147,12 @@ const AppContent = () => {
     );
   }
 
-  return <RoleBasedDashboard />;
+  // Use routing for authenticated users
+  return (
+    <Routes>
+      <Route path="/*" element={<RoleBasedDashboard />} />
+    </Routes>
+  );
 };
 
 export const App = () => {

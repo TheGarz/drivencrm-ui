@@ -1,20 +1,14 @@
 // Driven Users Page Component
-// Extracted from CompanyAdminDashboard to maintain exact styling and functionality
+// Updated to use React Router navigation directly
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../theme';
 import { Search, Plus, Shield, Filter, Edit3, Mail, Phone } from 'lucide-react';
 import { useUserManagement } from '../hooks/useUserManagement';
 
-interface DrivenUsersPageProps {
-  onEditUser: (userId: number) => void;
-  onAddUser: () => void;
-}
-
-const DrivenUsersPage: React.FC<DrivenUsersPageProps> = ({
-  onEditUser,
-  onAddUser
-}) => {
+const DrivenUsersPage: React.FC = () => {
+  const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const {
     userSearchQuery,
@@ -28,9 +22,13 @@ const DrivenUsersPage: React.FC<DrivenUsersPageProps> = ({
     handleEditUser
   } = useUserManagement();
 
+  const handleAddUser = () => {
+    navigate('/driven-users/add');
+  };
+
   const handleEditClick = (user: any) => {
     handleEditUser(user);
-    onEditUser(user.id);
+    navigate(`/driven-users/${user.id}/edit`);
   };
 
   return (
@@ -88,7 +86,7 @@ const DrivenUsersPage: React.FC<DrivenUsersPageProps> = ({
             </div>
           </div>
           <button
-            onClick={onAddUser}
+            onClick={handleAddUser}
             style={{
               backgroundColor: currentTheme.primary,
               color: 'white',
