@@ -558,7 +558,7 @@ return [];
           padding: '24px',
           borderBottom: `1px solid ${currentTheme.border}`
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
             <div>
               <h3 style={{
                 color: currentTheme.textPrimary,
@@ -589,12 +589,65 @@ return [];
                 fontWeight: '500',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '8px',
+                flexShrink: 0
               }}
             >
               <Plus size={16} />
               Add Custom Group
             </button>
+          </div>
+
+          {/* Custom Rules Notice */}
+          <div style={{
+            backgroundColor: currentTheme.warning + '15',
+            border: `1px solid ${currentTheme.warning}30`,
+            borderRadius: '8px',
+            padding: '12px 16px',
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '12px'
+          }}>
+            <AlertCircle style={{
+              color: currentTheme.warning,
+              width: '18px',
+              height: '18px',
+              marginTop: '2px',
+              flexShrink: 0
+            }} />
+            <div>
+              <div style={{
+                color: currentTheme.textPrimary,
+                fontSize: '14px',
+                fontWeight: '600',
+                marginBottom: '4px'
+              }}>
+                Custom Rules Setup Required
+              </div>
+              <div style={{
+                color: currentTheme.textSecondary,
+                fontSize: '13px',
+                lineHeight: '1.4'
+              }}>
+                Need custom metric calculations or specialized business rules? Please contact your onboarding specialists or{' '}
+                <a 
+                  href="#" 
+                  style={{
+                    color: currentTheme.primary,
+                    textDecoration: 'none',
+                    fontWeight: '500'
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Link will be provided later by user
+                  }}
+                >
+                  contact support here
+                </a>
+                {' '}to configure advanced custom rules for your organization's specific requirements.
+              </div>
+            </div>
           </div>
 
           {/* Group Toggle Switches */}

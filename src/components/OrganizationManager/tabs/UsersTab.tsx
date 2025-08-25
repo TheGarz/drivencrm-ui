@@ -126,8 +126,11 @@ const UsersTab: React.FC<{ organization: Organization; onUpdate: (org: Organizat
     setDisplayedUsers(prev => prev + 10);
   };
 
+  // Use organization users if available, otherwise use mock data
+  const users = organization.users && organization.users.length > 0 ? organization.users : mockUsers;
+
   // Filter users based on search and role
-  const filteredUsers = mockUsers.filter(user => {
+  const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = filterRole === 'all' || user.role.toLowerCase().includes(filterRole.toLowerCase());

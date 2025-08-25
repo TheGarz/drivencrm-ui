@@ -115,11 +115,18 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({ onBack, onSave }) => 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!userData.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!userData.lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!userData.username.trim()) newErrors.username = 'Username is required';
-    if (!userData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) {
+    if (!userData.firstName.trim()) {
+newErrors.firstName = 'First name is required';
+}
+    if (!userData.lastName.trim()) {
+newErrors.lastName = 'Last name is required';
+}
+    if (!userData.username.trim()) {
+newErrors.username = 'Username is required';
+}
+    if (!userData.email.trim()) {
+newErrors.email = 'Email is required';
+} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
 
@@ -148,7 +155,9 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({ onBack, onSave }) => 
   };
 
   const handleSave = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+return;
+}
 
     setIsLoading(true);
     try {
@@ -162,7 +171,9 @@ const UserProfileEdit: React.FC<UserProfileEditProps> = ({ onBack, onSave }) => 
   };
 
   const handlePasswordSave = async () => {
-    if (!validatePasswordChange()) return;
+    if (!validatePasswordChange()) {
+return;
+}
 
     setIsLoading(true);
     try {
