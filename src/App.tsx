@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from './theme';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { RoleBasedDashboard } from './components/RoleBasedDashboard';
@@ -150,11 +151,13 @@ const AppContent = () => {
 
 export const App = () => {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 };
 
