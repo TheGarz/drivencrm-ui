@@ -38,14 +38,30 @@ const CustomerLayout: React.FC = () => {
 
   // Get current active nav item from URL path
   const getActiveNavFromPath = (pathname: string): ViewType => {
-    if (pathname.includes('/analytics')) return 'analytics';
-    if (pathname.includes('/metrics')) return 'metrics';
-    if (pathname.includes('/integrations')) return 'integrations';
-    if (pathname.includes('/users')) return 'users';
-    if (pathname.includes('/reviews')) return 'reviews';
-    if (pathname.includes('/rewards')) return 'rewards';
-    if (pathname.includes('/billing')) return 'billing';
-    if (pathname.includes('/profile')) return 'profile';
+    if (pathname.includes('/analytics')) {
+return 'analytics';
+}
+    if (pathname.includes('/metrics')) {
+return 'metrics';
+}
+    if (pathname.includes('/integrations')) {
+return 'integrations';
+}
+    if (pathname.includes('/users')) {
+return 'users';
+}
+    if (pathname.includes('/reviews')) {
+return 'reviews';
+}
+    if (pathname.includes('/rewards')) {
+return 'rewards';
+}
+    if (pathname.includes('/billing')) {
+return 'billing';
+}
+    if (pathname.includes('/profile')) {
+return 'profile';
+}
     return 'dashboard';
   };
 

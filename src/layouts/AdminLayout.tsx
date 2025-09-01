@@ -60,8 +60,12 @@ const AdminLayout: React.FC = () => {
   
   // Get active nav item from current URL path
   const getActiveNavFromPath = (pathname: string): string => {
-    if (pathname.includes('/organizations')) return 'organizations';
-    if (pathname.includes('/driven-users')) return 'driven-users';
+    if (pathname.includes('/organizations')) {
+return 'organizations';
+}
+    if (pathname.includes('/driven-users')) {
+return 'driven-users';
+}
     return 'dashboard';
   };
 

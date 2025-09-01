@@ -40,10 +40,18 @@ export const useAdminNavigation = () => {
     const pathname = location.pathname;
     
     // Handle specific routes in order of specificity
-    if (pathname === '/organizations/add') return 'add-organization';
-    if (pathname === '/driven-users/add') return 'add-driven-user';
-    if (pathname.includes('/driven-users/') && pathname.includes('/edit')) return 'edit-user';
-    if (pathname.includes('/organizations/') && pathname !== '/organizations') return 'manage-organization';
+    if (pathname === '/organizations/add') {
+return 'add-organization';
+}
+    if (pathname === '/driven-users/add') {
+return 'add-driven-user';
+}
+    if (pathname.includes('/driven-users/') && pathname.includes('/edit')) {
+return 'edit-user';
+}
+    if (pathname.includes('/organizations/') && pathname !== '/organizations') {
+return 'manage-organization';
+}
     
     // Handle direct path matches
     return PATH_TO_VIEW_MAP[pathname] || 'dashboard';
@@ -53,9 +61,15 @@ export const useAdminNavigation = () => {
   const activeNavItem = useMemo((): ViewType => {
     const pathname = location.pathname;
     
-    if (pathname.includes('/organizations')) return 'organizations';
-    if (pathname.includes('/driven-users')) return 'driven-users';
-    if (pathname.includes('/profile')) return 'profile';
+    if (pathname.includes('/organizations')) {
+return 'organizations';
+}
+    if (pathname.includes('/driven-users')) {
+return 'driven-users';
+}
+    if (pathname.includes('/profile')) {
+return 'profile';
+}
     
     return 'dashboard';
   }, [location.pathname]);

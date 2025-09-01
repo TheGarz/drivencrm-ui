@@ -1,7 +1,7 @@
 export interface ConfigField {
   key: string;
   label: string;
-  type: 'text' | 'password' | 'url' | 'email' | 'select' | 'number';
+  type: 'text' | 'password' | 'url' | 'email' | 'select' | 'number' | 'toggle';
   required: boolean;
   placeholder?: string;
   description?: string;
@@ -28,12 +28,12 @@ export const integrationConfigs: Record<string, IntegrationConfig> = {
     description: 'Configure your PestPac connection to sync customer and service data.',
     fields: [
       {
-        key: 'server_url',
-        label: 'Server URL',
-        type: 'url',
+        key: 'companyKey',
+        label: 'Company Key',
+        type: 'text',
         required: true,
-        placeholder: 'https://your-pestpac-server.com',
-        description: 'Your PestPac server URL'
+        placeholder: 'your-company-key',
+        description: 'The PestPac company key identifier'
       },
       {
         key: 'username',
@@ -50,14 +50,6 @@ export const integrationConfigs: Record<string, IntegrationConfig> = {
         required: true,
         placeholder: '••••••••',
         description: 'PestPac login password'
-      },
-      {
-        key: 'database',
-        label: 'Database Name',
-        type: 'text',
-        required: true,
-        placeholder: 'your-database',
-        description: 'PestPac database name'
       }
     ],
     testConnection: true
@@ -69,23 +61,43 @@ export const integrationConfigs: Record<string, IntegrationConfig> = {
     description: 'Connect to FieldRoutes to sync routes, customers, and service data.',
     fields: [
       {
-        key: 'api_key',
-        label: 'API Key',
-        type: 'password',
+        key: 'base_url',
+        label: 'API Base URL',
+        type: 'url',
         required: true,
-        placeholder: 'fr_live_...',
-        description: 'Your FieldRoutes API key from Settings > API'
+        placeholder: 'https://company.fieldroutes.com/api/',
+        description: 'Your FieldRoutes API base URL (replace "company" with your subdomain)'
       },
       {
-        key: 'environment',
-        label: 'Environment',
-        type: 'select',
+        key: 'key',
+        label: 'Authentication Key',
+        type: 'text',
         required: true,
-        description: 'Select your FieldRoutes environment',
-        options: [
-          { value: 'production', label: 'Production' },
-          { value: 'sandbox', label: 'Sandbox' }
-        ]
+        placeholder: 'your-auth-key',
+        description: 'Authentication Key from FieldRoutes API settings'
+      },
+      {
+        key: 'token',
+        label: 'Authentication Token',
+        type: 'password',
+        required: true,
+        placeholder: '••••••••',
+        description: 'Authentication Token from FieldRoutes API settings'
+      },
+      {
+        key: 'officeID',
+        label: 'Office ID',
+        type: 'text',
+        required: false,
+        placeholder: 'optional-office-id',
+        description: 'Optional Office ID for multi-office setups'
+      },
+      {
+        key: 'free',
+        label: 'Free Account',
+        type: 'toggle',
+        required: false,
+        description: 'Enable if you have a FieldRoutes free account (API requests will be limited)'
       }
     ],
     testConnection: true
@@ -97,20 +109,28 @@ export const integrationConfigs: Record<string, IntegrationConfig> = {
     description: 'Integrate with FieldWork for mobile field service management.',
     fields: [
       {
-        key: 'api_token',
-        label: 'API Token',
-        type: 'password',
+        key: 'username',
+        label: 'Email',
+        type: 'email',
         required: true,
-        placeholder: 'fw_...',
-        description: 'FieldWork API token from your account settings'
+        placeholder: 'your-email@example.com',
+        description: 'Your FieldWork login email'
       },
       {
-        key: 'company_id',
-        label: 'Company ID',
-        type: 'text',
+        key: 'password',
+        label: 'Password',
+        type: 'password',
         required: true,
-        placeholder: '12345',
-        description: 'Your FieldWork company identifier'
+        placeholder: '••••••••',
+        description: 'Your FieldWork login password'
+      },
+      {
+        key: 'api_key',
+        label: 'API Key (Optional)',
+        type: 'password',
+        required: false,
+        placeholder: 'your-fieldwork-api-key',
+        description: 'If provided, will use API Key authentication instead of email/password'
       }
     ],
     testConnection: true
@@ -122,28 +142,28 @@ export const integrationConfigs: Record<string, IntegrationConfig> = {
     description: 'Connect to BrioStack for comprehensive business management.',
     fields: [
       {
-        key: 'api_url',
-        label: 'API URL',
-        type: 'url',
-        required: true,
-        placeholder: 'https://api.briostack.com',
-        description: 'BrioStack API endpoint URL'
-      },
-      {
-        key: 'client_id',
-        label: 'Client ID',
+        key: 'organization_id',
+        label: 'Organization ID',
         type: 'text',
         required: true,
-        placeholder: 'your-client-id',
-        description: 'OAuth client ID from BrioStack'
+        placeholder: 'your-organization-id',
+        description: 'Your BrioStack organization identifier (used in URL: https://your-org.briostack.com)'
       },
       {
-        key: 'client_secret',
-        label: 'Client Secret',
+        key: 'username',
+        label: 'Username',
+        type: 'text',
+        required: true,
+        placeholder: 'your-username',
+        description: 'Your BrioStack username'
+      },
+      {
+        key: 'password',
+        label: 'Password',
         type: 'password',
         required: true,
         placeholder: '••••••••',
-        description: 'OAuth client secret from BrioStack'
+        description: 'Your BrioStack password'
       }
     ],
     testConnection: true

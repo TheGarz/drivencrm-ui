@@ -38,7 +38,8 @@ export const EditUserPageWrapper: React.FC = () => {
     handleSaveEditedUser,
     handleAccountStatusToggle,
     handleTwoFactorToggle,
-    handleResetPassword
+    handleResetPassword,
+    handleEditUser
   } = useUserManagement();
 
   const handleBack = () => {
@@ -48,6 +49,13 @@ export const EditUserPageWrapper: React.FC = () => {
   // Find the user to edit
   const userToEdit = mockDrivenUsers.find(user => user.id === Number(userId));
   
+  // Initialize the user state when the component loads
+  React.useEffect(() => {
+    if (userToEdit && selectedUserId !== userToEdit.id) {
+      handleEditUser(userToEdit);
+    }
+  }, [userToEdit, selectedUserId, handleEditUser]);
+
   if (!userToEdit) {
     navigate('/driven-users');
     return null;

@@ -77,6 +77,20 @@ export const IntegrationsView: React.FC<IntegrationsViewProps> = ({
   onUpdate 
 }) => {
   const { currentTheme } = useTheme();
+
+  // Category color mapping
+  const getCategoryColor = (category: string): string => {
+    const categoryColors: Record<string, string> = {
+      'CRM': '#3B82F6',           // Blue
+      'Communication': '#10B981', // Green  
+      'Reviews': '#F59E0B',       // Amber
+      'Accounting': '#8B5CF6',    // Purple
+      'Marketing': '#EF4444',     // Red
+      'Other': '#6B7280'          // Gray
+    };
+    return categoryColors[category] || categoryColors['Other'];
+  };
+
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -93,15 +107,40 @@ export const IntegrationsView: React.FC<IntegrationsViewProps> = ({
     allIntegrations.find(integration => integration.id === service.type)?.crmSystem
   ) || false;
 
+  const connectedCrmIntegration = organization.services?.find(service => 
+    allIntegrations.find(integration => integration.id === service.type)?.crmSystem
+  );
+
+  // Get the CRM type that's already connected (if any)
+  const connectedCrmType = connectedCrmIntegration?.type;
+
   const connectedIntegrations = organization.services?.map(service => service.type) || [];
 
   const filteredIntegrations = allIntegrations.filter(integration => {
     const categoryMatch = selectedCategory === 'All' || integration.category === selectedCategory;
-    const notConnected = !connectedIntegrations.includes(integration.id);
-    return categoryMatch && notConnected;
+    
+    // Business Rule 1: CRM must be added first (unless this IS a CRM)
+    const crmFirstRule = integration.crmSystem || hasCrmIntegration;
+    
+    // Business Rule 2: Only allow the SAME CRM type if a CRM already exists
+    const sameCrmTypeRule = !integration.crmSystem || !hasCrmIntegration || integration.id === connectedCrmType;
+    
+    return categoryMatch && crmFirstRule && sameCrmTypeRule;
   });
 
   const handleConnectIntegration = (integration: Integration) => {
+    // Business Rule Validation
+    if (!integration.crmSystem && !hasCrmIntegration) {
+      alert('⚠️ CRM Required First\n\nYou must connect a CRM system (PestPac, FieldRoutes, FieldWork, or BrioStack) before adding other integrations.');
+      return;
+    }
+
+    if (integration.crmSystem && hasCrmIntegration && integration.id !== connectedCrmType) {
+      const currentCrmName = allIntegrations.find(i => i.id === connectedCrmType)?.name || 'Unknown CRM';
+      alert(`⚠️ Different CRM Type Not Allowed\n\nYou already have ${currentCrmName} connected. You can only use one CRM type at a time.\n\nYou can add multiple ${currentCrmName} instances, but to switch to ${integration.name}, please remove all ${currentCrmName} instances first.`);
+      return;
+    }
+
     const newService = {
       uid: `${integration.id.toLowerCase()}-${Date.now()}`,
       type: integration.id,
@@ -333,7 +372,29 @@ return <AlertCircle size={16} />;
 
         <div style={{ padding: '16px 0' }}>
           {organization.services && organization.services.length > 0 ? (
-            organization.services.map((service) => {
+            organization.services
+              .sort((a, b) => {
+                const integrationA = allIntegrations.find(i => i.id === a.type);
+                const integrationB = allIntegrations.find(i => i.id === b.type);
+                
+                // First sort by category (CRM first, then alphabetically)
+                const categoryA = integrationA?.category || 'Other';
+                const categoryB = integrationB?.category || 'Other';
+                
+                if (categoryA !== categoryB) {
+                  // CRM category goes first
+                  if (categoryA === 'CRM') return -1;
+                  if (categoryB === 'CRM') return 1;
+                  // Then alphabetical by category
+                  return categoryA.localeCompare(categoryB);
+                }
+                
+                // Within same category, sort by integration name
+                const nameA = integrationA?.name || a.name || a.type;
+                const nameB = integrationB?.name || b.name || b.type;
+                return nameA.localeCompare(nameB);
+              })
+              .map((service) => {
               const integration = allIntegrations.find(i => i.id === service.type);
               return (
                 <div key={service.uid} style={{
@@ -1208,7 +1269,7 @@ const ConfigurationForm: React.FC<{
     return '';
   };
 
-  const handleFieldChange = (fieldKey: string, value: string) => {
+  const handleFieldChange = (fieldKey: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [fieldKey]: value }));
     
     // Clear error for this field
@@ -1223,10 +1284,35 @@ const ConfigurationForm: React.FC<{
 
   const handleTestConnection = async () => {
     setIsTestingConnection(true);
-    // Simulate connection test
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsTestingConnection(false);
-    alert('Connection test successful!');
+    
+    try {
+      // Import the testing function
+      const { testIntegrationConnection } = await import('../api/integrationTesting');
+      
+      // Test the connection with current form data
+      const result = await testIntegrationConnection(service.type, formData);
+      
+      setIsTestingConnection(false);
+      
+      // Use a more detailed and user-friendly display
+      const title = result.success ? 'Connection Successful!' : 'Connection Failed';
+      const icon = result.success ? '✅' : '❌';
+      const message = `${icon} ${result.message}`;
+      
+      // For now, still use alert but with better formatting
+      // TODO: Replace with a proper modal component
+      alert(message);
+      
+      // Log details for debugging
+      if (result.details) {
+        console.log('Connection test details:', result.details);
+      }
+      
+    } catch (error: any) {
+      setIsTestingConnection(false);
+      console.error('Connection test error:', error);
+      alert(`❌ Connection test failed: ${error.message}`);
+    }
   };
 
   const handleSubmit = () => {
@@ -1304,6 +1390,31 @@ const ConfigurationForm: React.FC<{
               </option>
             ))}
           </select>
+        ) : field.type === 'toggle' ? (
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            cursor: 'pointer',
+            gap: '8px'
+          }}>
+            <input
+              type="checkbox"
+              checked={value === true || value === 'true'}
+              onChange={(e) => handleFieldChange(field.key, e.target.checked)}
+              style={{
+                width: '18px',
+                height: '18px',
+                accentColor: currentTheme.primary
+              }}
+            />
+            <span style={{
+              color: currentTheme.textPrimary,
+              fontSize: '14px',
+              userSelect: 'none'
+            }}>
+              Enable {field.label}
+            </span>
+          </label>
         ) : (
           <div style={{ position: 'relative' }}>
             <input

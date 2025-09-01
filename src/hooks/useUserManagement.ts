@@ -162,16 +162,11 @@ export const useUserManagement = () => {
     alert('User updated successfully!');
   }, []);
 
-  // Handle account status toggle - exact same logic
+  // Handle account status toggle - simplified to toggle directly
   const handleAccountStatusToggle = useCallback(() => {
-    if (userAccountActive) {
-      // Show warning for deactivation
-      setShowInactiveWarning(true);
-    } else {
-      // Directly activate account
-      setUserAccountActive(true);
-      console.log('Account activated for user:', selectedUserId);
-    }
+    const newStatus = !userAccountActive;
+    setUserAccountActive(newStatus);
+    console.log(`Account ${newStatus ? 'activated' : 'deactivated'} for user:`, selectedUserId);
   }, [userAccountActive, selectedUserId]);
 
   // Handle 2FA toggle - exact same logic
