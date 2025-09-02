@@ -1,31 +1,21 @@
-import { useState, useRef, useEffect } from 'react';
-import { Shield, ArrowLeft, CheckCircle, Loader2, RotateCcw } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Shield, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
 import { useTheme } from '../theme';
 import { DrivenBrandLogo } from './DrivenBrandLogo';
 
 interface TwoFactorScreenProps {
   onBack: () => void;
   onVerify: (code: string) => Promise<void>;
-  onResendCode: () => Promise<void>;
   userEmail: string;
 }
 
-export const TwoFactorScreen = ({ onBack, onVerify, onResendCode, userEmail }: TwoFactorScreenProps) => {
+export const TwoFactorScreen = ({ onBack, onVerify, userEmail }: TwoFactorScreenProps) => {
   const { currentTheme, theme } = useTheme();
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
-  const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState('');
-  const [resendTimer, setResendTimer] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Resend timer countdown
-  useEffect(() => {
-    if (resendTimer > 0) {
-      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendTimer]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,19 +116,6 @@ return;
     }
   };
 
-  const handleResendCode = async () => {
-    setIsResending(true);
-    setError('');
-
-    try {
-      await onResendCode();
-      setResendTimer(60); // 60 second cooldown
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to resend code. Please try again.');
-    } finally {
-      setIsResending(false);
-    }
-  };
 
   return (
     <div style={{
@@ -237,7 +214,7 @@ return;
             margin: 0,
             lineHeight: '1.5'
           }}>
-            Enter the 6-digit code from your authenticator app or SMS sent to <strong style={{ color: currentTheme.textPrimary }}>{userEmail}</strong>
+            Enter the 6-digit code from your authenticator app
           </p>
         </div>
 
@@ -368,69 +345,8 @@ inputRefs.current[index] = el;
             {isLoading ? 'Verifying...' : 'Verify Code'}
           </button>
 
-          {/* Resend Code */}
-          <div style={{ textAlign: 'center' }}>
-            <p style={{
-              color: currentTheme.textSecondary,
-              fontSize: '14px',
-              margin: '0 0 8px 0'
-            }}>
-              Didn't receive a code?
-            </p>
-            <button
-              type="button"
-              onClick={handleResendCode}
-              disabled={isResending || resendTimer > 0}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: (isResending || resendTimer > 0) ? currentTheme.textSecondary : currentTheme.primary,
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: (isResending || resendTimer > 0) ? 'not-allowed' : 'pointer',
-                textDecoration: 'underline',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                margin: '0 auto'
-              }}
-            >
-              {isResending ? (
-                <>
-                  <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
-                  Sending...
-                </>
-              ) : resendTimer > 0 ? (
-                `Resend in ${resendTimer}s`
-              ) : (
-                <>
-                  <RotateCcw size={14} />
-                  Resend Code
-                </>
-              )}
-            </button>
-          </div>
         </form>
 
-        {/* Footer */}
-        <div style={{
-          marginTop: '32px',
-          paddingTop: '24px',
-          borderTop: `1px solid ${currentTheme.border}`,
-          textAlign: 'center'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            color: currentTheme.textSecondary,
-            fontSize: '12px'
-          }}>
-            <span>Powered by</span>
-            <DrivenBrandLogo height={16} />
-          </div>
-        </div>
       </div>
 
       {/* CSS for animations */}

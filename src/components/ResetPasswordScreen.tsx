@@ -483,25 +483,6 @@ setError('');
           </button>
         </form>
 
-        {/* Footer */}
-        <div style={{
-          marginTop: '32px',
-          paddingTop: '24px',
-          borderTop: `1px solid ${currentTheme.border}`,
-          textAlign: 'center'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            color: currentTheme.textSecondary,
-            fontSize: '12px'
-          }}>
-            <span>Powered by</span>
-            <DrivenBrandLogo height={16} />
-          </div>
-        </div>
       </div>
 
       {/* CSS for animations */}

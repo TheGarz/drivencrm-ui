@@ -368,17 +368,6 @@ setError('');
             </button>
           </p>
           
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            color: currentTheme.textSecondary,
-            fontSize: '12px'
-          }}>
-            <span>Powered by</span>
-            <DrivenBrandLogo height={16} />
-          </div>
         </div>
       </div>
 

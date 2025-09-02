@@ -27,6 +27,8 @@ interface User {
   location?: string;
   plan?: string;
   permissions?: string[];
+  twoFactorEnabled?: boolean;
+  twoFactorSetupComplete?: boolean;
 }
 
 interface AuthContextType {
@@ -123,7 +125,23 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           company: 'Driven Software',
           location: 'Salt Lake City, UT',
           plan: 'Enterprise',
-          permissions: ['all_access', 'company_admin', 'super_admin']
+          permissions: ['all_access', 'company_admin', 'super_admin'],
+          twoFactorEnabled: true,
+          twoFactorSetupComplete: true
+        };
+      } else if (credentials.email === 'admin-no2fa@driven.com' && credentials.password === 'demo123') {
+        mockUser = {
+          id: '5',
+          name: 'Alex Johnson',
+          email: credentials.email,
+          role: 'ADMIN',
+          avatar: 'AJ',
+          company: 'Driven Software',
+          location: 'Salt Lake City, UT',
+          plan: 'Enterprise',
+          permissions: ['all_access', 'company_admin', 'super_admin'],
+          twoFactorEnabled: true,
+          twoFactorSetupComplete: false
         };
       } else if (credentials.email === 'owner@demo.com' && credentials.password === 'demo123') {
         mockUser = {
@@ -135,7 +153,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           company: 'Demo Pest Control',
           location: 'Denver, CO',
           plan: 'Professional',
-          permissions: ['dashboard', 'analytics', 'integrations', 'metrics', 'users', 'reviews', 'settings', 'billing']
+          permissions: ['dashboard', 'analytics', 'integrations', 'metrics', 'users', 'reviews', 'settings', 'billing'],
+          twoFactorEnabled: true,
+          twoFactorSetupComplete: true
         };
       } else if (credentials.email === 'manager@demo.com' && credentials.password === 'demo123') {
         mockUser = {
@@ -147,7 +167,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           company: 'Demo Pest Control',
           location: 'Phoenix, AZ',
           plan: 'Professional',
-          permissions: ['dashboard', 'analytics', 'metrics', 'users', 'scheduling', 'reports']
+          permissions: ['dashboard', 'analytics', 'metrics', 'users', 'scheduling', 'reports'],
+          twoFactorEnabled: true,
+          twoFactorSetupComplete: true
         };
       } else if (credentials.email === 'tech@demo.com' && credentials.password === 'demo123') {
         mockUser = {
@@ -159,7 +181,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           company: 'Demo Pest Control',
           location: 'Austin, TX',
           plan: 'Basic',
-          permissions: ['dashboard', 'scheduling', 'service_tickets']
+          permissions: ['dashboard', 'scheduling', 'service_tickets'],
+          twoFactorEnabled: true,
+          twoFactorSetupComplete: true
         };
       } else if (credentials.email === 'demo@driven.com' && credentials.password === 'demo123') {
         // Backward compatibility
@@ -172,7 +196,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           company: 'Driven Software',
           location: 'Salt Lake City, UT',
           plan: 'Enterprise',
-          permissions: ['all_access', 'company_admin', 'super_admin']
+          permissions: ['all_access', 'company_admin', 'super_admin'],
+          twoFactorEnabled: true,
+          twoFactorSetupComplete: true
         };
       }
 

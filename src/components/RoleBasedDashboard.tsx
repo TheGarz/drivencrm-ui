@@ -21,8 +21,8 @@ export const RoleBasedDashboard = () => {
     return null; // This shouldn't happen as auth is checked in App.tsx
   }
 
-  // Driven employees get the admin router with URL-based routing
-  if (user.role === 'DRIVEN_EMPLOYEE') {
+  // Driven employees and admins get the admin router with URL-based routing
+  if (user.role === 'DRIVEN_EMPLOYEE' || user.role === 'ADMIN') {
     return <AdminRouter />;
   }
 
