@@ -44,8 +44,8 @@ type UserRole =
 export const rolePermissions: Record<UserRole, string[]> = {
   'DRIVEN_EMPLOYEE': ['all_access', 'company_admin', 'super_admin'],
   'THIRD_PARTY': ['dashboard', 'integrations'],
-  'OWNER': ['dashboard', 'analytics', 'integrations', 'metrics', 'users', 'reviews', 'rewards', 'billing'],
-  'ADMIN': ['dashboard', 'analytics', 'integrations', 'metrics', 'users', 'reviews', 'rewards'],
+  'OWNER': ['dashboard', 'analytics', 'integrations', 'metrics', 'users', 'rewards', 'reviews', 'billing'],
+  'ADMIN': ['dashboard', 'analytics', 'integrations', 'metrics', 'users', 'rewards', 'reviews'],
   'EXECUTIVE_BRANCH_MANAGER': ['dashboard', 'metrics', 'users', 'reviews', 'branchManagement'],
   'BRANCH_MANAGER': ['dashboard', 'metrics', 'users', 'scheduling', 'reports'],
   'TEAM_CAPTAIN': ['dashboard', 'teamMetrics', 'scheduling', 'users'],
@@ -61,11 +61,11 @@ export const rolePermissions: Record<UserRole, string[]> = {
 // All possible navigation items
 const allNavigationItems: Record<string, NavigationItem> = {
   dashboard: { id: 'dashboard', icon: BarChart3, text: 'Dashboard', description: 'Overview & Quick Actions' },
-  analytics: { id: 'analytics', icon: TrendingUp, text: 'Analytics Hub', description: 'Key Performance Metrics' },
+  analytics: { id: 'analytics', icon: TrendingUp, text: 'Metrics Hub', description: 'Key Performance Metrics' },
   integrations: { id: 'integrations', icon: Link, text: 'Integrations', description: 'CRM & Data Sources' },
   metrics: { id: 'metrics', icon: Gauge, text: 'Metric Configurations', description: 'Setup Metrics & KPIs' },
   users: { id: 'users', icon: Users, text: 'User Management', description: 'Staff & Permissions' },
-  reviews: { id: 'reviews', icon: Star, text: 'Reviews', description: 'Google & Online Reviews' },
+  reviews: { id: 'reviews', icon: Star, text: 'Reviews', description: 'Coming Soon' },
   rewards: { id: 'rewards', icon: Gift, text: 'Rewards', description: 'Customer Loyalty Program' },
 
   

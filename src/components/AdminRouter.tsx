@@ -2,10 +2,12 @@ import { Routes, Route } from 'react-router-dom';
 import AdminLayout from '../layouts/AdminLayout';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
 import OrganizationsPage from '../pages/OrganizationsPage';
+import UserManagementPage from '../pages/UserManagementPage';
 import DrivenUsersPage from '../pages/DrivenUsersPage';
 import ProfilePage from '../pages/ProfilePage';
 import {
   EditUserPageWrapper,
+  EditUserManagementPageWrapper,
   AddNewOrganizationWrapper,
   AddDrivenUserWrapper,
   UserProfileEditWrapper,
@@ -22,6 +24,7 @@ export const AdminRouter = () => {
         <Route index element={<AdminDashboardPage />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="organizations" element={<OrganizationsPage />} />
+        <Route path="user-management" element={<UserManagementPage />} />
         <Route path="driven-users" element={<DrivenUsersPage />} />
         <Route path="profile" element={<ProfilePage />} />
         
@@ -30,6 +33,7 @@ export const AdminRouter = () => {
         <Route path="organizations/add" element={<AddNewOrganizationWrapper />} />
         
         {/* User management sub-routes */}
+        <Route path="user-management/:userId/edit" element={<EditUserManagementPageWrapper />} />
         <Route path="driven-users/:userId/edit" element={<EditUserPageWrapper />} />
         <Route path="driven-users/add" element={<AddDrivenUserWrapper />} />
         

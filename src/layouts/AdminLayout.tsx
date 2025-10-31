@@ -19,7 +19,8 @@ import {
   Edit3,
   Settings,
   Moon,
-  Sun
+  Sun,
+  UserCog
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { 
@@ -55,13 +56,17 @@ const AdminLayout: React.FC = () => {
   const navigationItems: NavigationItem[] = [
     { id: 'dashboard', icon: BarChart3, text: 'Dashboard', description: 'Platform Overview', path: '/dashboard' },
     { id: 'organizations', icon: Building2, text: 'Organizations', description: 'Manage Client Organizations', path: '/organizations' },
-    { id: 'driven-users', icon: Users, text: 'Driven Users', description: 'Platform User Management', path: '/driven-users' }
+    { id: 'user-management', icon: UserCog, text: 'User Management', description: 'Manage Organization Users', path: '/user-management' },
+    { id: 'driven-users', icon: Users, text: 'Driven Employees', description: 'Employee User Management', path: '/driven-users' }
   ];
   
   // Get active nav item from current URL path
   const getActiveNavFromPath = (pathname: string): string => {
     if (pathname.includes('/organizations')) {
 return 'organizations';
+}
+    if (pathname.includes('/user-management')) {
+return 'user-management';
 }
     if (pathname.includes('/driven-users')) {
 return 'driven-users';
@@ -363,11 +368,13 @@ return 'driven-users';
               <h1 style={{ color: currentTheme.textPrimary, fontSize: '36px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
                 {activeNavItem === 'dashboard' && 'Admin Dashboard'}
                 {activeNavItem === 'organizations' && 'Organizations'}
-                {activeNavItem === 'driven-users' && 'Driven Users'}
+                {activeNavItem === 'user-management' && (location.pathname.includes('/edit') ? 'Edit User' : 'User Management')}
+                {activeNavItem === 'driven-users' && 'Driven Employees'}
               </h1>
               <p style={{ color: currentTheme.textSecondary, fontSize: '18px', margin: 0 }}>
                 {activeNavItem === 'dashboard' && 'Platform overview and management tools'}
                 {activeNavItem === 'organizations' && 'Manage Client Organizations'}
+                {activeNavItem === 'user-management' && (location.pathname.includes('/edit') ? '' : 'Manage users across all organizations')}
                 {activeNavItem === 'driven-users' && 'Platform User Management'}
               </p>
             </div>

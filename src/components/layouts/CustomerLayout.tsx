@@ -461,11 +461,11 @@ return 'profile';
             <div>
               <h1 style={{ color: currentTheme.textPrimary, fontSize: '36px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
                 {activeNavItem === 'dashboard' && 'Dashboard'}
-                {activeNavItem === 'analytics' && 'Analytics Hub'}
+                {activeNavItem === 'analytics' && 'Metrics Hub'}
                 {activeNavItem === 'metrics' && 'Metric Configurations'}
                 {activeNavItem === 'integrations' && 'Data Integrations'}
                 {activeNavItem === 'users' && 'User Management'}
-                {activeNavItem === 'reviews' && 'Review Analytics'}
+                {activeNavItem === 'reviews' && 'Reviews'}
                 {activeNavItem === 'rewards' && 'Rewards Program'}
                 {activeNavItem === 'billing' && 'Billing & Payments'}
                 {activeNavItem === 'profile' && 'My Profile'}
@@ -476,7 +476,7 @@ return 'profile';
                 {activeNavItem === 'metrics' && 'Configure and manage metric tracking and KPIs'}
                 {activeNavItem === 'integrations' && 'Connect your CRM, GPS, and review platforms'}
                 {activeNavItem === 'users' && 'Manage staff accounts, roles, and permissions'}
-                {activeNavItem === 'reviews' && 'Monitor and respond to customer feedback'}
+                {activeNavItem === 'reviews' && 'Coming Soon'}
                 {activeNavItem === 'rewards' && 'Manage customer loyalty and reward programs'}
                 {activeNavItem === 'billing' && 'Track subscriptions, payments, and financial metrics'}
                 {activeNavItem === 'profile' && 'Manage your personal information and security settings'}

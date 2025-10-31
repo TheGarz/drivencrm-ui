@@ -693,11 +693,11 @@ const OrganizationDashboard: React.FC = () => {
             <div>
               <h1 style={{ color: currentTheme.textPrimary, fontSize: '36px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
                 {currentView === 'dashboard' && 'Dashboard'}
-                {currentView === 'analytics' && 'Analytics Hub'}
+                {currentView === 'analytics' && 'Metrics Hub'}
                 {currentView === 'metrics' && 'Metric Configurations'}
                 {currentView === 'integrations' && 'Data Integrations'}
                 {currentView === 'users' && 'User Management'}
-                {currentView === 'reviews' && 'Review Analytics'}
+                {currentView === 'reviews' && 'Reviews'}
                 {currentView === 'rewards' && 'Rewards Program'}
                 {currentView === 'profile' && 'My Profile'}
               </h1>
@@ -707,7 +707,7 @@ const OrganizationDashboard: React.FC = () => {
                 {currentView === 'metrics' && 'Configure and manage metric tracking and KPIs'}
                 {currentView === 'integrations' && 'Connect your CRM, GPS, and review platforms'}
                 {currentView === 'users' && 'Manage staff accounts, roles, and permissions'}
-                {currentView === 'reviews' && 'Monitor and respond to customer feedback'}
+                {currentView === 'reviews' && 'Coming Soon'}
                 {currentView === 'rewards' && 'Manage customer loyalty and reward programs'}
                 {currentView === 'profile' && 'Manage your personal information and security settings'}
               </p>

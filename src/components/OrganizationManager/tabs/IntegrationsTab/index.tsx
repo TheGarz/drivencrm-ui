@@ -330,8 +330,12 @@ return <AlertCircle size={16} />;
                 
                 if (categoryA !== categoryB) {
                   // CRM category goes first
-                  if (categoryA === 'CRM') return -1;
-                  if (categoryB === 'CRM') return 1;
+                  if (categoryA === 'CRM') {
+return -1;
+}
+                  if (categoryB === 'CRM') {
+return 1;
+}
                   // Then alphabetical by category
                   return categoryA.localeCompare(categoryB);
                 }
@@ -542,7 +546,9 @@ return <AlertCircle size={16} />;
             .filter(category => category === 'All' ? false : filteredIntegrations.some(int => int.category === category))
             .map(category => {
               const categoryIntegrations = filteredIntegrations.filter(int => int.category === category);
-              if (categoryIntegrations.length === 0) return null;
+              if (categoryIntegrations.length === 0) {
+return null;
+}
               
               return (
                 <div key={category} style={{ marginBottom: '32px' }}>
@@ -597,9 +603,15 @@ return <AlertCircle size={16} />;
                 transition: 'all 0.2s ease',
                 opacity: (() => {
                   // Show full opacity if this integration can be added
-                  if (integration.crmSystem && !hasCrmIntegration) return 1; // First CRM
-                  if (integration.crmSystem && hasCrmIntegration && integration.id === connectedCrmType) return 1; // Same CRM type
-                  if (!integration.crmSystem && hasCrmIntegration) return 1; // Non-CRM and CRM exists
+                  if (integration.crmSystem && !hasCrmIntegration) {
+return 1;
+} // First CRM
+                  if (integration.crmSystem && hasCrmIntegration && integration.id === connectedCrmType) {
+return 1;
+} // Same CRM type
+                  if (!integration.crmSystem && hasCrmIntegration) {
+return 1;
+} // Non-CRM and CRM exists
                   return 0.6; // Disabled state
                 })(),
                 position: 'relative'

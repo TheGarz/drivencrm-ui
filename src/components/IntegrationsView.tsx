@@ -383,8 +383,12 @@ return <AlertCircle size={16} />;
                 
                 if (categoryA !== categoryB) {
                   // CRM category goes first
-                  if (categoryA === 'CRM') return -1;
-                  if (categoryB === 'CRM') return 1;
+                  if (categoryA === 'CRM') {
+return -1;
+}
+                  if (categoryB === 'CRM') {
+return 1;
+}
                   // Then alphabetical by category
                   return categoryA.localeCompare(categoryB);
                 }

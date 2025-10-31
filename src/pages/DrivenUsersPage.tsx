@@ -33,28 +33,6 @@ const DrivenUsersPage: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Page Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <div>
-            <h1 style={{ color: currentTheme.textPrimary, fontSize: '36px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
-              Driven Users Management
-            </h1>
-            <p style={{ color: currentTheme.textSecondary, fontSize: '18px', margin: 0 }}>
-              Platform user access and permissions
-            </p>
-          </div>
-          
-          {/* Spacer to maintain layout balance */}
-          <div style={{ width: '120px' }}></div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {/* Spacer to maintain search bar space */}
-          <div style={{ width: '256px' }}></div>
-        </div>
-      </div>
-
       {/* Driven Users Management - exact same styling */}
       <div style={{
         backgroundColor: currentTheme.cardBg,

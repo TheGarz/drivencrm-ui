@@ -36,28 +36,6 @@ const OrganizationsPage: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Page Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <div>
-            <h1 style={{ color: currentTheme.textPrimary, fontSize: '36px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
-              Organizations Management
-            </h1>
-            <p style={{ color: currentTheme.textSecondary, fontSize: '18px', margin: 0 }}>
-              Manage client organizations and configurations
-            </p>
-          </div>
-          
-          {/* Spacer to maintain layout balance */}
-          <div style={{ width: '120px' }}></div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {/* Spacer to maintain search bar space */}
-          <div style={{ width: '256px' }}></div>
-        </div>
-      </div>
-
       {/* Organizations List - exact same styling */}
       <div style={{
         backgroundColor: currentTheme.cardBg,
