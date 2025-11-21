@@ -17,6 +17,16 @@ export default defineConfig({
     watch: {
       usePolling: true,
     },
+    proxy: {
+      '/api/snappy': {
+        target: 'https://api.snappy.com/public-api/v2',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/snappy/, ''),
+        headers: {
+          'X-Api-Key': 'fF6TPhD76jT2ytoTjf9s9cwcz-0L4fBMU0EQeG22zjxtGixQBbuSoJLxrrcpQ5qj'
+        }
+      }
+    }
   },
   preview: {
     host: '0.0.0.0',
