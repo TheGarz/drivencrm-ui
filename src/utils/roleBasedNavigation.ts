@@ -1,6 +1,6 @@
-import { 
-  BarChart3, 
-  Users, 
+import {
+  BarChart3,
+  Users,
   Link,
   Gauge,
   Star,
@@ -24,11 +24,11 @@ export interface NavigationItem {
   permissions?: string[];
 }
 
-type UserRole = 
-  | 'DRIVEN_EMPLOYEE' 
-  | 'THIRD_PARTY' 
-  | 'OWNER' 
-  | 'ADMIN' 
+type UserRole =
+  | 'DRIVEN_EMPLOYEE'
+  | 'THIRD_PARTY'
+  | 'OWNER'
+  | 'ADMIN'
   | 'EXECUTIVE_BRANCH_MANAGER'
   | 'BRANCH_MANAGER'
   | 'TEAM_CAPTAIN'
@@ -66,9 +66,9 @@ const allNavigationItems: Record<string, NavigationItem> = {
   metrics: { id: 'metrics', icon: Gauge, text: 'Metric Configurations', description: 'Setup Metrics & KPIs' },
   users: { id: 'users', icon: Users, text: 'User Management', description: 'Staff & Permissions' },
   reviews: { id: 'reviews', icon: Star, text: 'Reviews', description: 'Coming Soon' },
-  rewards: { id: 'rewards', icon: Gift, text: 'Rewards', description: 'Customer Loyalty Program' },
+  rewards: { id: 'rewards', icon: Gift, text: 'Employee Rewards', description: 'Employee Incentive Program' },
 
-  
+
   // Role-specific items
   billing: { id: 'billing', icon: CreditCard, text: 'Billing', description: 'Subscription & Payments' },
   scheduling: { id: 'scheduling', icon: Calendar, text: 'Scheduling', description: 'Appointments & Routes' },
@@ -77,7 +77,7 @@ const allNavigationItems: Record<string, NavigationItem> = {
   salesPipeline: { id: 'salesPipeline', icon: UserCheck, text: 'Sales Pipeline', description: 'Lead Management' },
   serviceTickets: { id: 'serviceTickets', icon: Wrench, text: 'Service Tickets', description: 'Work Orders & Tasks' },
   reports: { id: 'reports', icon: FileText, text: 'Reports', description: 'Performance Reports' },
-  
+
   // Specialized metrics
   teamMetrics: { id: 'teamMetrics', icon: Gauge, text: 'Team Metrics', description: 'Team Performance' },
   csrMetrics: { id: 'csrMetrics', icon: Gauge, text: 'CSR Metrics', description: 'Customer Service Analytics' },
@@ -91,21 +91,21 @@ const allNavigationItems: Record<string, NavigationItem> = {
 // Get navigation items based on user role
 export const getNavigationForRole = (role: UserRole): NavigationItem[] => {
   const permissions = rolePermissions[role] || [];
-  
+
   const navigationItems: NavigationItem[] = [];
-  
+
   // Always include dashboard for everyone
   if (allNavigationItems.dashboard) {
     navigationItems.push(allNavigationItems.dashboard);
   }
-  
+
   // Add items based on permissions
   permissions.forEach(permission => {
     if (allNavigationItems[permission] && !navigationItems.find(item => item.id === permission)) {
       navigationItems.push(allNavigationItems[permission]);
     }
   });
-  
+
   return navigationItems;
 };
 
@@ -133,7 +133,7 @@ export const getRoleDisplayName = (role: UserRole): string => {
     'TECH_MEMBER': 'Tech Member',
     'GUEST': 'Guest'
   };
-  
+
   return roleNames[role] || role;
 };
 
@@ -155,6 +155,6 @@ export const getRoleLevel = (role: UserRole): number => {
     'THIRD_PARTY': 2,
     'GUEST': 1
   };
-  
+
   return roleLevels[role] || 1;
 };

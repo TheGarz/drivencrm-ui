@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail, LogIn, Loader2 } from 'lucide-react';
 import { useTheme } from '../theme';
+import { TEST_USERS } from '../auth/AuthContext';
 import { DrivenBrandLogo } from './DrivenBrandLogo';
 
 interface LoginScreenProps {
@@ -36,14 +37,14 @@ export const LoginScreen = ({ onLogin, onForgotPassword }: LoginScreenProps) => 
   const handleInputChange = (field: 'email' | 'password') => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [field]: e.target.value }));
     if (error) {
-setError('');
-} // Clear error when user starts typing
+      setError('');
+    } // Clear error when user starts typing
   };
 
   return (
     <div style={{
       minHeight: '100vh',
-      background: theme === 'dark' 
+      background: theme === 'dark'
         ? `linear-gradient(135deg, ${currentTheme.background} 0%, ${currentTheme.sidebarBg} 100%)`
         : `linear-gradient(135deg, ${currentTheme.background} 0%, ${currentTheme.sand} 100%)`,
       display: 'flex',
@@ -68,15 +69,15 @@ setError('');
         width: '100%',
         maxWidth: '480px',
         border: `2px solid ${currentTheme.border}`,
-        boxShadow: theme === 'dark' 
-          ? '0 25px 50px -12px rgba(0, 0, 0, 0.4)' 
+        boxShadow: theme === 'dark'
+          ? '0 25px 50px -12px rgba(0, 0, 0, 0.4)'
           : '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
         position: 'relative',
         zIndex: 1
       }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <DrivenBrandLogo 
+          <DrivenBrandLogo
             variant="square"
             height={120}
             style={{ marginBottom: '12px' }}
@@ -241,7 +242,7 @@ setError('');
                 }}
               />
             </div>
-            <label 
+            <label
               htmlFor="rememberMe"
               style={{
                 color: currentTheme.textSecondary,
@@ -367,7 +368,63 @@ setError('');
               Contact Administrator
             </button>
           </p>
-          
+
+        </div>
+      </div>
+
+      {/* Fast Login Section */}
+      <div style={{
+        position: 'absolute',
+        top: '20px',
+        right: '20px',
+        backgroundColor: currentTheme.cardBg,
+        padding: '20px',
+        borderRadius: '16px',
+        border: `1px solid ${currentTheme.border}`,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+        maxWidth: '300px',
+        zIndex: 10
+      }}>
+        <h3 style={{
+          margin: '0 0 12px 0',
+          fontSize: '14px',
+          fontWeight: '600',
+          color: currentTheme.textPrimary,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          ⚡ Fast Login (Dev)
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <select
+            onChange={(e) => {
+              const user = TEST_USERS.find(u => u.id === e.target.value);
+              if (user) {
+                setFormData({ email: user.email, password: 'demo123' });
+              }
+            }}
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '8px',
+              border: `1px solid ${currentTheme.border}`,
+              backgroundColor: currentTheme.background,
+              color: currentTheme.textPrimary,
+              fontSize: '13px',
+              outline: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="">Select a test user...</option>
+            {TEST_USERS.filter((u, index, self) =>
+              index === self.findIndex((t) => t.id === u.id) // Dedup by ID
+            ).map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.name} - {user.role.replace(/_/g, ' ')}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

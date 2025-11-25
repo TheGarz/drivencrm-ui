@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 
-type UserRole = 
-  | 'DRIVEN_EMPLOYEE' 
-  | 'THIRD_PARTY' 
-  | 'OWNER' 
-  | 'ADMIN' 
+type UserRole =
+  | 'DRIVEN_EMPLOYEE'
+  | 'THIRD_PARTY'
+  | 'OWNER'
+  | 'ADMIN'
   | 'EXECUTIVE_BRANCH_MANAGER'
   | 'BRANCH_MANAGER'
   | 'TEAM_CAPTAIN'
@@ -45,6 +45,88 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+export const TEST_USERS: User[] = [
+  {
+    id: '1',
+    name: 'Sarah Mitchell',
+    email: 'admin@driven.com',
+    role: 'DRIVEN_EMPLOYEE',
+    avatar: 'SM',
+    company: 'Driven Software',
+    location: 'Salt Lake City, UT',
+    plan: 'Enterprise',
+    permissions: ['all_access', 'company_admin', 'super_admin'],
+    twoFactorEnabled: true,
+    twoFactorSetupComplete: true
+  },
+  {
+    id: '5',
+    name: 'Alex Johnson',
+    email: 'admin-no2fa@driven.com',
+    role: 'ADMIN',
+    avatar: 'AJ',
+    company: 'Driven Software',
+    location: 'Salt Lake City, UT',
+    plan: 'Enterprise',
+    permissions: ['all_access', 'company_admin', 'super_admin'],
+    twoFactorEnabled: true,
+    twoFactorSetupComplete: false
+  },
+  {
+    id: '2',
+    name: 'John Doe',
+    email: 'owner@demo.com',
+    role: 'OWNER',
+    avatar: 'JD',
+    company: 'Demo Pest Control',
+    location: 'Denver, CO',
+    plan: 'Professional',
+    permissions: ['dashboard', 'analytics', 'integrations', 'metrics', 'users', 'reviews', 'settings', 'billing'],
+    twoFactorEnabled: true,
+    twoFactorSetupComplete: true
+  },
+  {
+    id: '3',
+    name: 'Jane Smith',
+    email: 'manager@demo.com',
+    role: 'BRANCH_MANAGER',
+    avatar: 'JS',
+    company: 'Demo Pest Control',
+    location: 'Phoenix, AZ',
+    plan: 'Professional',
+    permissions: ['dashboard', 'analytics', 'metrics', 'users', 'scheduling', 'reports'],
+    twoFactorEnabled: true,
+    twoFactorSetupComplete: true
+  },
+  {
+    id: '4',
+    name: 'Mike Johnson',
+    email: 'tech@demo.com',
+    role: 'TECH_MEMBER',
+    avatar: 'MJ',
+    company: 'Demo Pest Control',
+    location: 'Austin, TX',
+    plan: 'Basic',
+    permissions: ['dashboard', 'scheduling', 'service_tickets'],
+    twoFactorEnabled: true,
+    twoFactorSetupComplete: true
+  },
+  {
+    // Backward compatibility
+    id: '1',
+    name: 'Sarah Mitchell',
+    email: 'demo@driven.com',
+    role: 'DRIVEN_EMPLOYEE',
+    avatar: 'SM',
+    company: 'Driven Software',
+    location: 'Salt Lake City, UT',
+    plan: 'Enterprise',
+    permissions: ['all_access', 'company_admin', 'super_admin'],
+    twoFactorEnabled: true,
+    twoFactorSetupComplete: true
+  }
+];
+
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,11 +135,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     const checkAuth = () => {
       const authDataStr = localStorage.getItem('driven-auth-data');
-      
+
       if (authDataStr) {
         try {
           const authData = JSON.parse(authDataStr);
-          
+
           // Check if session has expired
           if (authData.expiresAt && Date.now() > authData.expiresAt) {
             // Session expired, clear storage
@@ -73,7 +155,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           // Fall back to old method
           const savedUser = localStorage.getItem('driven-user');
           const authToken = localStorage.getItem('driven-auth-token');
-          
+
           if (savedUser && authToken) {
             try {
               setUser(JSON.parse(savedUser));
@@ -88,7 +170,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Fall back to old method for backward compatibility
         const savedUser = localStorage.getItem('driven-user');
         const authToken = localStorage.getItem('driven-auth-token');
-        
+
         if (savedUser && authToken) {
           try {
             setUser(JSON.parse(savedUser));
@@ -107,124 +189,45 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const login = async (credentials: { email: string; password: string; rememberMe?: boolean }) => {
     setIsLoading(true);
-    
+
     try {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       // Mock authentication with different demo users
       let mockUser: User | null = null;
-      
-      if (credentials.email === 'admin@driven.com' && credentials.password === 'demo123') {
-        mockUser = {
-          id: '1',
-          name: 'Sarah Mitchell',
-          email: credentials.email,
-          role: 'DRIVEN_EMPLOYEE',
-          avatar: 'SM',
-          company: 'Driven Software',
-          location: 'Salt Lake City, UT',
-          plan: 'Enterprise',
-          permissions: ['all_access', 'company_admin', 'super_admin'],
-          twoFactorEnabled: true,
-          twoFactorSetupComplete: true
-        };
-      } else if (credentials.email === 'admin-no2fa@driven.com' && credentials.password === 'demo123') {
-        mockUser = {
-          id: '5',
-          name: 'Alex Johnson',
-          email: credentials.email,
-          role: 'ADMIN',
-          avatar: 'AJ',
-          company: 'Driven Software',
-          location: 'Salt Lake City, UT',
-          plan: 'Enterprise',
-          permissions: ['all_access', 'company_admin', 'super_admin'],
-          twoFactorEnabled: true,
-          twoFactorSetupComplete: false
-        };
-      } else if (credentials.email === 'owner@demo.com' && credentials.password === 'demo123') {
-        mockUser = {
-          id: '2',
-          name: 'John Doe',
-          email: credentials.email,
-          role: 'OWNER',
-          avatar: 'JD',
-          company: 'Demo Pest Control',
-          location: 'Denver, CO',
-          plan: 'Professional',
-          permissions: ['dashboard', 'analytics', 'integrations', 'metrics', 'users', 'reviews', 'settings', 'billing'],
-          twoFactorEnabled: true,
-          twoFactorSetupComplete: true
-        };
-      } else if (credentials.email === 'manager@demo.com' && credentials.password === 'demo123') {
-        mockUser = {
-          id: '3',
-          name: 'Jane Smith',
-          email: credentials.email,
-          role: 'BRANCH_MANAGER',
-          avatar: 'JS',
-          company: 'Demo Pest Control',
-          location: 'Phoenix, AZ',
-          plan: 'Professional',
-          permissions: ['dashboard', 'analytics', 'metrics', 'users', 'scheduling', 'reports'],
-          twoFactorEnabled: true,
-          twoFactorSetupComplete: true
-        };
-      } else if (credentials.email === 'tech@demo.com' && credentials.password === 'demo123') {
-        mockUser = {
-          id: '4',
-          name: 'Mike Johnson',
-          email: credentials.email,
-          role: 'TECH_MEMBER',
-          avatar: 'MJ',
-          company: 'Demo Pest Control',
-          location: 'Austin, TX',
-          plan: 'Basic',
-          permissions: ['dashboard', 'scheduling', 'service_tickets'],
-          twoFactorEnabled: true,
-          twoFactorSetupComplete: true
-        };
-      } else if (credentials.email === 'demo@driven.com' && credentials.password === 'demo123') {
-        // Backward compatibility
-        mockUser = {
-          id: '1',
-          name: 'Sarah Mitchell',
-          email: credentials.email,
-          role: 'DRIVEN_EMPLOYEE',
-          avatar: 'SM',
-          company: 'Driven Software',
-          location: 'Salt Lake City, UT',
-          plan: 'Enterprise',
-          permissions: ['all_access', 'company_admin', 'super_admin'],
-          twoFactorEnabled: true,
-          twoFactorSetupComplete: true
-        };
+
+      // Check against TEST_USERS
+      const foundUser = TEST_USERS.find(u => u.email === credentials.email);
+
+      // Simple password check for demo purposes
+      if (foundUser && credentials.password === 'demo123') {
+        mockUser = foundUser;
       }
 
       if (mockUser) {
-        
+
         // Save to localStorage with expiration based on rememberMe
-        const expirationTime = credentials.rememberMe 
+        const expirationTime = credentials.rememberMe
           ? Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
           : Date.now() + (24 * 60 * 60 * 1000); // 1 day
-        
-          const authData = {
-            user: mockUser,
-            token: 'mock-jwt-token',
-            expiresAt: expirationTime,
-            rememberMe: credentials.rememberMe || false
-          };
-          
-          localStorage.setItem('driven-auth-data', JSON.stringify(authData));
-          // Keep backward compatibility
-          localStorage.setItem('driven-user', JSON.stringify(mockUser));
-          localStorage.setItem('driven-auth-token', 'mock-jwt-token');
-          
-          setUser(mockUser);
-        } else {
-          throw new Error('Invalid email or password');
-        }
+
+        const authData = {
+          user: mockUser,
+          token: 'mock-jwt-token',
+          expiresAt: expirationTime,
+          rememberMe: credentials.rememberMe || false
+        };
+
+        localStorage.setItem('driven-auth-data', JSON.stringify(authData));
+        // Keep backward compatibility
+        localStorage.setItem('driven-user', JSON.stringify(mockUser));
+        localStorage.setItem('driven-auth-token', 'mock-jwt-token');
+
+        setUser(mockUser);
+      } else {
+        throw new Error('Invalid email or password');
+      }
     } finally {
       setIsLoading(false);
     }
