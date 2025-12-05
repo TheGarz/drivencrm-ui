@@ -62,6 +62,9 @@ interface Campaign {
   totalRecipients?: number;
   customRecurrenceDays?: number;
   payoutMethod?: 'automatic' | 'manual';
+  tieBreakerRule?: 'standard' | 'dense';
+  tieBreakerPayout?: 'full' | 'split';
+  tieredRewards?: number[];
 }
 
 interface PayoutRecord {
@@ -435,7 +438,10 @@ const RewardsPage: React.FC = () => {
       qualifierValue: editingCampaign?.qualifierValue || 3,
       payoutMethod: editingCampaign?.payoutMethod || 'manual',
       rewardAmount: editingCampaign?.rewardAmount || 50,
-      rewardType: editingCampaign?.rewardType || 'points'
+      rewardType: editingCampaign?.rewardType || 'points',
+      tieBreakerRule: editingCampaign?.tieBreakerRule || 'standard',
+      tieBreakerPayout: editingCampaign?.tieBreakerPayout || 'full',
+      tieredRewards: editingCampaign?.tieredRewards || []
     });
 
     const steps = [
