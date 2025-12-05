@@ -61,6 +61,7 @@ interface Campaign {
   // Stats
   totalRecipients?: number;
   customRecurrenceDays?: number;
+  payoutMethod?: 'automatic' | 'manual';
 }
 
 interface PayoutRecord {
@@ -92,102 +93,96 @@ const MOCK_CAMPAIGNS: Campaign[] = [
     name: '5-Star Google Review',
     description: 'Reward customers for leaving a 5-star review on Google',
     type: 'automated',
-    rewardAmount: 500,
+    rewardAmount: 5000,
     rewardType: 'points',
     status: 'running',
     triggers: ['Review Posted', '5 Stars'],
     totalPayouts: 12500,
-    startDate: '2024-01-01',
+    startDate: '2023-10-01',
     recurrence: 'monthly',
-    duration: 12,
+    duration: 3,
     currentCycle: 3,
-    participants: ['All Users'],
-    metric: 'reviews',
+    participants: ['Sales'],
+    metric: 'revenue',
     qualifierType: 'threshold',
-    qualifierValue: 5,
+    qualifierValue: 50000,
     isArchived: false,
-    totalRecipients: 25
+    payoutMethod: 'manual'
   },
   {
     id: '2',
-    name: 'Referral Bonus',
+    name: '5-Star Service Challenge',
     description: 'Reward customers for referring a new client who signs up',
-    type: 'automated',
-    rewardAmount: 25,
-    rewardType: 'currency',
+    type: 'manual',
     status: 'running',
-    triggers: ['New Customer Signup', 'Referral Code Used'],
-    totalPayouts: 450,
-    startDate: '2024-02-01',
-    recurrence: 'none',
+    startDate: '2023-11-01',
+    recurrence: 'monthly',
     duration: 1,
-    currentCycle: 1,
-    participants: ['All Users'],
-    metric: 'referrals',
-    qualifierType: 'threshold',
-    qualifierValue: 1,
-    isArchived: false,
-    totalRecipients: 18
+    participants: ['Technicians'],
+    metric: 'reviews',
+    qualifierType: 'top_n',
+    qualifierValue: 3,
+    rewardType: 'points',
+    rewardAmount: 10000,
+    tieredRewards: [10000, 5000, 2500],
+    totalPayouts: 0,
+    payoutMethod: 'automatic',
+    tieBreakerRule: 'standard',
+    tieBreakerPayout: 'full'
   },
   {
     id: '3',
-    name: 'Employee of the Month',
+    name: 'Safety First',
     description: 'Monthly reward for the top performing technician',
-    type: 'manual',
-    rewardAmount: 100,
-    rewardType: 'currency',
+    type: 'automated',
     status: 'completed',
-    totalPayouts: 1200,
-    startDate: '2023-01-01',
+    startDate: '2023-09-01',
     recurrence: 'monthly',
-    duration: 12,
-    currentCycle: 12,
-    participants: ['Technicians'],
+    duration: 1,
+    participants: ['Technicians', 'CSRs'],
     metric: 'pro_score',
-    qualifierType: 'top_n',
-    qualifierValue: 1,
-    isArchived: false,
-    totalRecipients: 12
+    qualifierType: 'threshold',
+    qualifierValue: 90,
+    rewardType: 'points',
+    rewardAmount: 2000,
+    totalPayouts: 0,
+    payoutMethod: 'manual'
   },
   {
     id: '4',
     name: 'Seasonal Promotion',
     description: 'Summer pest control signup bonus',
     type: 'manual',
-    rewardAmount: 1000,
-    rewardType: 'points',
     status: 'pending',
-    totalPayouts: 0,
     startDate: '2024-06-01',
-    recurrence: 'none',
+    recurrence: 'monthly',
     duration: 3,
-    currentCycle: 0,
     participants: ['All Users'],
     metric: 'revenue',
     qualifierType: 'threshold',
     qualifierValue: 500,
-    isArchived: false,
-    totalRecipients: 0
+    rewardType: 'points',
+    rewardAmount: 1000,
+    totalPayouts: 0,
+    payoutMethod: 'manual'
   },
   {
     id: '5',
     name: 'Failed Experiment',
     description: 'A campaign that did not work out',
-    type: 'manual',
-    rewardAmount: 50,
-    rewardType: 'points',
+    type: 'automated',
     status: 'failed',
-    totalPayouts: 0,
     startDate: '2024-01-01',
-    recurrence: 'none',
+    recurrence: 'monthly',
     duration: 1,
-    currentCycle: 0,
     participants: ['All Users'],
     metric: 'revenue',
     qualifierType: 'threshold',
     qualifierValue: 1000000,
-    isArchived: false,
-    totalRecipients: 0
+    rewardType: 'points',
+    rewardAmount: 50,
+    totalPayouts: 0,
+    payoutMethod: 'manual'
   }
 ];
 
@@ -438,6 +433,7 @@ const RewardsPage: React.FC = () => {
       metric: editingCampaign?.metric || 'pro_score',
       qualifierType: editingCampaign?.qualifierType || 'top_n',
       qualifierValue: editingCampaign?.qualifierValue || 3,
+      payoutMethod: editingCampaign?.payoutMethod || 'manual',
       rewardAmount: editingCampaign?.rewardAmount || 50,
       rewardType: editingCampaign?.rewardType || 'points'
     });
@@ -508,6 +504,7 @@ const RewardsPage: React.FC = () => {
             metric: formData.metric,
             qualifierType: formData.qualifierType,
             qualifierValue: formData.qualifierValue,
+            payoutMethod: formData.payoutMethod,
             isArchived: editingCampaign?.isArchived || false
           };
 
@@ -895,10 +892,9 @@ const RewardsPage: React.FC = () => {
               <div>
                 <label style={{ display: 'block', marginBottom: '8px', color: currentTheme.textPrimary, fontWeight: '500' }}>Qualification Logic</label>
                 {isActive && <LockedFieldIndicator label="Qualification Logic" />}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', opacity: isActive ? 0.6 : 1, pointerEvents: isActive ? 'none' : 'auto' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', opacity: isActive ? 0.6 : 1, pointerEvents: isActive ? 'none' : 'auto' }}>
                   {[
                     { id: 'top_n', label: 'Top Performers', desc: 'Reward a specific number of top-ranking users (e.g., Top 3).' },
-                    { id: 'percentile', label: 'Top Percentile', desc: 'Reward the top percentage of users (e.g., Top 10%).' },
                     { id: 'threshold', label: 'Fixed Threshold', desc: 'Reward anyone who meets or exceeds a specific score or value.' },
                     { id: 'everyone', label: 'Participation', desc: 'Reward every eligible participant regardless of performance.' }
                   ].map(type => (
@@ -923,12 +919,11 @@ const RewardsPage: React.FC = () => {
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', color: currentTheme.textPrimary, fontWeight: '500' }}>
                     {formData.qualifierType === 'top_n' ? 'Number of Winners' :
-                      formData.qualifierType === 'percentile' ? 'Top Percentage' :
-                        formData.metric === 'pro_score' ? 'Minimum Pro Score (0-100)' :
-                          formData.metric === 'revenue' ? 'Minimum Revenue ($)' :
-                            formData.metric === 'reviews' ? 'Minimum 5-Star Reviews' :
-                              formData.metric === 'completion' ? 'Minimum Completion Rate (%)' :
-                                'Minimum Threshold'}
+                      formData.metric === 'pro_score' ? 'Minimum Pro Score (0-100)' :
+                        formData.metric === 'revenue' ? 'Minimum Revenue ($)' :
+                          formData.metric === 'reviews' ? 'Minimum 5-Star Reviews' :
+                            formData.metric === 'completion' ? 'Minimum Completion Rate (%)' :
+                              'Minimum Threshold'}
                   </label>
                   <input
                     type="number"
@@ -947,12 +942,11 @@ const RewardsPage: React.FC = () => {
                   />
                   <p style={{ marginTop: '8px', fontSize: '12px', color: currentTheme.textSecondary }}>
                     {formData.qualifierType === 'top_n' ? `The top ${formData.qualifierValue} users with the highest ${getMetricLabel(formData.metric)} will be rewarded.` :
-                      formData.qualifierType === 'percentile' ? `Users in the top ${formData.qualifierValue}% for ${getMetricLabel(formData.metric)} will be rewarded.` :
-                        formData.metric === 'pro_score' ? `Users with a Pro Score of ${formData.qualifierValue} or higher will be rewarded.` :
-                          formData.metric === 'revenue' ? `Users who generate $${formData.qualifierValue} or more in revenue will be rewarded.` :
-                            formData.metric === 'reviews' ? `Users with ${formData.qualifierValue} or more 5-star reviews will be rewarded.` :
-                              formData.metric === 'completion' ? `Users with a completion rate of ${formData.qualifierValue}% or higher will be rewarded.` :
-                                `Users meeting the threshold of ${formData.qualifierValue} will be rewarded.`}
+                      formData.metric === 'pro_score' ? `Users with a Pro Score of ${formData.qualifierValue} or higher will be rewarded.` :
+                        formData.metric === 'revenue' ? `Users who generate $${formData.qualifierValue} or more in revenue will be rewarded.` :
+                          formData.metric === 'reviews' ? `Users with ${formData.qualifierValue} or more 5-star reviews will be rewarded.` :
+                            formData.metric === 'completion' ? `Users with a completion rate of ${formData.qualifierValue}% or higher will be rewarded.` :
+                              `Users meeting the threshold of ${formData.qualifierValue} will be rewarded.`}
                   </p>
                 </div>
               )}
@@ -963,57 +957,341 @@ const RewardsPage: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '8px', color: currentTheme.textPrimary, fontWeight: '500' }}>Reward Amount</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: currentTheme.textSecondary }}>Points</label>
-                    <input
-                      type="number"
-                      value={formData.rewardAmount}
-                      onChange={e => {
-                        const points = parseInt(e.target.value) || 0;
-                        setFormData({ ...formData, rewardAmount: points });
-                        if (errors.rewardAmount) setErrors({ ...errors, rewardAmount: false });
-                      }}
-                      disabled={isActive}
-                      style={{
-                        width: '100%',
-                        padding: '12px',
-                        borderRadius: '8px',
-                        border: `1px solid ${errors.rewardAmount ? currentTheme.danger : currentTheme.border}`,
-                        backgroundColor: isActive ? `${currentTheme.background}80` : currentTheme.background,
-                        color: isActive ? currentTheme.textSecondary : currentTheme.textPrimary,
-                        cursor: isActive ? 'not-allowed' : 'text'
-                      }}
-                    />
+
+                {formData.qualifierType === 'top_n' ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {Array.from({ length: formData.qualifierValue || 0 }).map((_, index) => (
+                      <div key={index} style={{ padding: '8px 12px', border: `1px solid ${currentTheme.border}`, borderRadius: '8px', backgroundColor: `${currentTheme.background}50`, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <label style={{ minWidth: '80px', margin: 0, color: currentTheme.textPrimary, fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center' }}>
+                          <Trophy size={13} style={{ display: 'inline', marginRight: '6px', color: index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : index === 2 ? '#CD7F32' : currentTheme.textSecondary }} />
+                          Rank #{index + 1}
+                        </label>
+                        <div style={{ display: 'flex', flex: 1, gap: '12px' }}>
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '11px', color: currentTheme.textSecondary, minWidth: '35px' }}>Points:</span>
+                            <input
+                              type="number"
+                              placeholder="0"
+                              value={formData.tieredRewards?.[index] || ''}
+                              onChange={e => {
+                                const points = parseInt(e.target.value) || 0;
+                                const newTieredRewards = [...(formData.tieredRewards || [])];
+                                newTieredRewards[index] = points;
+                                setFormData({ ...formData, tieredRewards: newTieredRewards });
+                                if (errors[`tieredReward_${index}`]) {
+                                  const newErrors = { ...errors };
+                                  delete newErrors[`tieredReward_${index}`];
+                                  setErrors(newErrors);
+                                }
+                              }}
+                              disabled={isActive}
+                              style={{
+                                width: '100%',
+                                padding: '6px 10px',
+                                borderRadius: '6px',
+                                border: `1px solid ${errors[`tieredReward_${index}`] ? currentTheme.danger : currentTheme.border}`,
+                                backgroundColor: isActive ? `${currentTheme.background}80` : currentTheme.background,
+                                color: isActive ? currentTheme.textSecondary : currentTheme.textPrimary,
+                                cursor: isActive ? 'not-allowed' : 'text',
+                                fontSize: '13px'
+                              }}
+                            />
+                          </div>
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '11px', color: currentTheme.textSecondary, minWidth: '35px' }}>Cash:</span>
+                            <input
+                              type="number"
+                              placeholder="$0.00"
+                              value={((formData.tieredRewards?.[index] || 0) / 25).toFixed(2)}
+                              onChange={e => {
+                                const cash = parseFloat(e.target.value) || 0;
+                                const points = Math.round(cash * 25);
+                                const newTieredRewards = [...(formData.tieredRewards || [])];
+                                newTieredRewards[index] = points;
+                                setFormData({ ...formData, tieredRewards: newTieredRewards });
+                                if (errors[`tieredReward_${index}`]) {
+                                  const newErrors = { ...errors };
+                                  delete newErrors[`tieredReward_${index}`];
+                                  setErrors(newErrors);
+                                }
+                              }}
+                              disabled={isActive}
+                              step="0.01"
+                              style={{
+                                width: '100%',
+                                padding: '6px 10px',
+                                borderRadius: '6px',
+                                border: `1px solid ${errors[`tieredReward_${index}`] ? currentTheme.danger : currentTheme.border}`,
+                                backgroundColor: isActive ? `${currentTheme.background}80` : currentTheme.background,
+                                color: isActive ? currentTheme.textSecondary : currentTheme.textPrimary,
+                                cursor: isActive ? 'not-allowed' : 'text',
+                                fontSize: '13px'
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: currentTheme.textSecondary }}>Cash Value ($)</label>
-                    <input
-                      type="number"
-                      value={(formData.rewardAmount / 3).toFixed(2)}
-                      onChange={e => {
-                        const cash = parseFloat(e.target.value) || 0;
-                        setFormData({ ...formData, rewardAmount: Math.round(cash * 3) });
-                        if (errors.rewardAmount) setErrors({ ...errors, rewardAmount: false });
-                      }}
-                      disabled={isActive}
-                      step="0.01"
-                      style={{
-                        width: '100%',
-                        padding: '12px',
-                        borderRadius: '8px',
-                        border: `1px solid ${errors.rewardAmount ? currentTheme.danger : currentTheme.border}`,
-                        backgroundColor: isActive ? `${currentTheme.background}80` : currentTheme.background,
-                        color: isActive ? currentTheme.textSecondary : currentTheme.textPrimary,
-                        cursor: isActive ? 'not-allowed' : 'text'
-                      }}
-                    />
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: currentTheme.textSecondary }}>Points</label>
+                      <input
+                        type="number"
+                        value={formData.rewardAmount}
+                        onChange={e => {
+                          const points = parseInt(e.target.value) || 0;
+                          setFormData({ ...formData, rewardAmount: points });
+                          if (errors.rewardAmount) setErrors({ ...errors, rewardAmount: false });
+                        }}
+                        disabled={isActive}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: `1px solid ${errors.rewardAmount ? currentTheme.danger : currentTheme.border}`,
+                          backgroundColor: isActive ? `${currentTheme.background}80` : currentTheme.background,
+                          color: isActive ? currentTheme.textSecondary : currentTheme.textPrimary,
+                          cursor: isActive ? 'not-allowed' : 'text'
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: currentTheme.textSecondary }}>Cash Value ($)</label>
+                      <input
+                        type="number"
+                        value={(formData.rewardAmount / 25).toFixed(2)}
+                        onChange={e => {
+                          const cash = parseFloat(e.target.value) || 0;
+                          setFormData({ ...formData, rewardAmount: Math.round(cash * 25) });
+                          if (errors.rewardAmount) setErrors({ ...errors, rewardAmount: false });
+                        }}
+                        disabled={isActive}
+                        step="0.01"
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: `1px solid ${errors.rewardAmount ? currentTheme.danger : currentTheme.border}`,
+                          backgroundColor: isActive ? `${currentTheme.background}80` : currentTheme.background,
+                          color: isActive ? currentTheme.textSecondary : currentTheme.textPrimary,
+                          cursor: isActive ? 'not-allowed' : 'text'
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
+
                 <p style={{ marginTop: '8px', fontSize: '12px', color: currentTheme.textSecondary }}>
-                  Conversion Rate: 3 Points = $1.00
+                  Conversion Rate: 25 Points = $1.00
                 </p>
                 {isActive && <LockedFieldIndicator label="Reward Amount" />}
+              </div>
+
+              {formData.qualifierType === 'top_n' && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', color: currentTheme.textPrimary, fontWeight: '500' }}>Tie Breaker Rule</label>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <div
+                      onClick={() => !isActive && setFormData({ ...formData, tieBreakerRule: 'standard' })}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: `2px solid ${formData.tieBreakerRule === 'standard' ? currentTheme.primary : currentTheme.border}`,
+                        backgroundColor: formData.tieBreakerRule === 'standard' ? `${currentTheme.primary}05` : 'transparent',
+                        cursor: isActive ? 'not-allowed' : 'pointer',
+                        opacity: isActive ? 0.6 : 1
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <div style={{
+                          width: '14px',
+                          height: '14px',
+                          borderRadius: '50%',
+                          border: `2px solid ${formData.tieBreakerRule === 'standard' ? currentTheme.primary : currentTheme.textSecondary}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          {formData.tieBreakerRule === 'standard' && <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: currentTheme.primary }} />}
+                        </div>
+                        <span style={{ fontWeight: '600', color: currentTheme.textPrimary, fontSize: '14px' }}>Standard (1224)</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11px', color: currentTheme.textSecondary, lineHeight: '1.3' }}>
+                        Tied users share the rank. The next rank is skipped (e.g., 1st, 2nd, 2nd, 4th).
+                      </p>
+                    </div>
+
+                    <div
+                      onClick={() => !isActive && setFormData({ ...formData, tieBreakerRule: 'dense' })}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: `2px solid ${formData.tieBreakerRule === 'dense' ? currentTheme.primary : currentTheme.border}`,
+                        backgroundColor: formData.tieBreakerRule === 'dense' ? `${currentTheme.primary}05` : 'transparent',
+                        cursor: isActive ? 'not-allowed' : 'pointer',
+                        opacity: isActive ? 0.6 : 1
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <div style={{
+                          width: '14px',
+                          height: '14px',
+                          borderRadius: '50%',
+                          border: `2px solid ${formData.tieBreakerRule === 'dense' ? currentTheme.primary : currentTheme.textSecondary}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          {formData.tieBreakerRule === 'dense' && <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: currentTheme.primary }} />}
+                        </div>
+                        <span style={{ fontWeight: '600', color: currentTheme.textPrimary, fontSize: '14px' }}>Dense (1223)</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11px', color: currentTheme.textSecondary, lineHeight: '1.3' }}>
+                        Tied users share the rank. The next rank is NOT skipped (e.g., 1st, 2nd, 2nd, 3rd).
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {formData.qualifierType === 'top_n' && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', color: currentTheme.textPrimary, fontWeight: '500' }}>Tie Breaker Payout</label>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <div
+                      onClick={() => !isActive && setFormData({ ...formData, tieBreakerPayout: 'full' })}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: `2px solid ${formData.tieBreakerPayout === 'full' ? currentTheme.primary : currentTheme.border}`,
+                        backgroundColor: formData.tieBreakerPayout === 'full' ? `${currentTheme.primary}05` : 'transparent',
+                        cursor: isActive ? 'not-allowed' : 'pointer',
+                        opacity: isActive ? 0.6 : 1
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <div style={{
+                          width: '14px',
+                          height: '14px',
+                          borderRadius: '50%',
+                          border: `2px solid ${formData.tieBreakerPayout === 'full' ? currentTheme.primary : currentTheme.textSecondary}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          {formData.tieBreakerPayout === 'full' && <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: currentTheme.primary }} />}
+                        </div>
+                        <span style={{ fontWeight: '600', color: currentTheme.textPrimary, fontSize: '14px' }}>Full Payout</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11px', color: currentTheme.textSecondary, lineHeight: '1.3' }}>
+                        Each tied winner receives the full reward amount for their rank.
+                      </p>
+                    </div>
+
+                    <div
+                      onClick={() => !isActive && setFormData({ ...formData, tieBreakerPayout: 'split' })}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: `2px solid ${formData.tieBreakerPayout === 'split' ? currentTheme.primary : currentTheme.border}`,
+                        backgroundColor: formData.tieBreakerPayout === 'split' ? `${currentTheme.primary}05` : 'transparent',
+                        cursor: isActive ? 'not-allowed' : 'pointer',
+                        opacity: isActive ? 0.6 : 1
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <div style={{
+                          width: '14px',
+                          height: '14px',
+                          borderRadius: '50%',
+                          border: `2px solid ${formData.tieBreakerPayout === 'split' ? currentTheme.primary : currentTheme.textSecondary}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          {formData.tieBreakerPayout === 'split' && <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: currentTheme.primary }} />}
+                        </div>
+                        <span style={{ fontWeight: '600', color: currentTheme.textPrimary, fontSize: '14px' }}>Split Payout</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11px', color: currentTheme.textSecondary, lineHeight: '1.3' }}>
+                        The reward amount for the rank is split equally among tied winners.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', color: currentTheme.textPrimary, fontWeight: '500' }}>Payout Method</label>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div
+                    onClick={() => !isActive && setFormData({ ...formData, payoutMethod: 'automatic' })}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: `2px solid ${formData.payoutMethod === 'automatic' ? currentTheme.primary : currentTheme.border}`,
+                      backgroundColor: formData.payoutMethod === 'automatic' ? `${currentTheme.primary}05` : 'transparent',
+                      cursor: isActive ? 'not-allowed' : 'pointer',
+                      opacity: isActive ? 0.6 : 1
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <div style={{
+                        width: '14px',
+                        height: '14px',
+                        borderRadius: '50%',
+                        border: `2px solid ${formData.payoutMethod === 'automatic' ? currentTheme.primary : currentTheme.textSecondary}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        {formData.payoutMethod === 'automatic' && <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: currentTheme.primary }} />}
+                      </div>
+                      <span style={{ fontWeight: '600', color: currentTheme.textPrimary, fontSize: '14px' }}>Automatic</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11px', color: currentTheme.textSecondary, lineHeight: '1.3' }}>
+                      Once the campaign is done, rewards will automatically be paid out to the participants.
+                    </p>
+                  </div>
+
+                  <div
+                    onClick={() => !isActive && setFormData({ ...formData, payoutMethod: 'manual' })}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: `2px solid ${formData.payoutMethod === 'manual' ? currentTheme.primary : currentTheme.border}`,
+                      backgroundColor: formData.payoutMethod === 'manual' ? `${currentTheme.primary}05` : 'transparent',
+                      cursor: isActive ? 'not-allowed' : 'pointer',
+                      opacity: isActive ? 0.6 : 1
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <div style={{
+                        width: '14px',
+                        height: '14px',
+                        borderRadius: '50%',
+                        border: `2px solid ${formData.payoutMethod === 'manual' ? currentTheme.primary : currentTheme.textSecondary}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        {formData.payoutMethod === 'manual' && <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: currentTheme.primary }} />}
+                      </div>
+                      <span style={{ fontWeight: '600', color: currentTheme.textPrimary, fontSize: '14px' }}>Manual</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11px', color: currentTheme.textSecondary, lineHeight: '1.3' }}>
+                      You will need to manually review and approve each person's payout before it is sent.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div style={{ padding: '16px', backgroundColor: `${currentTheme.primary}10`, borderRadius: '8px', border: `1px solid ${currentTheme.primary}30` }}>
@@ -1035,20 +1313,23 @@ const RewardsPage: React.FC = () => {
 
                   let estimatedWinners = totalUsers;
                   let isMax = true;
+                  let totalPoints = 0;
 
                   if (formData.qualifierType === 'top_n') {
                     estimatedWinners = Math.min(formData.qualifierValue || 0, totalUsers);
                     isMax = false; // Exact count
-                  } else if (formData.qualifierType === 'percentile') {
-                    estimatedWinners = Math.ceil(totalUsers * ((formData.qualifierValue || 0) / 100));
-                    isMax = false; // Exact count
+                    // Calculate total points from tiered rewards, up to the number of estimated winners
+                    const rewards = formData.tieredRewards || [];
+                    for (let i = 0; i < estimatedWinners; i++) {
+                      totalPoints += (rewards[i] || 0);
+                    }
+                  } else {
+                    // Threshold and Everyone are "Max" estimates because not everyone might qualify
+                    if (formData.qualifierType === 'everyone') isMax = false; // Everyone gets it
+                    totalPoints = estimatedWinners * formData.rewardAmount;
                   }
 
-                  // Threshold and Everyone are "Max" estimates because not everyone might qualify
-                  if (formData.qualifierType === 'everyone') isMax = false; // Everyone gets it
-
-                  const totalPoints = estimatedWinners * formData.rewardAmount;
-                  const totalCash = totalPoints / 3;
+                  const totalCash = totalPoints / 25;
 
                   return (
                     <div>
@@ -1067,12 +1348,15 @@ const RewardsPage: React.FC = () => {
                           <div style={{ color: currentTheme.primary, fontSize: '12px' }}>(${totalCash.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</div>
                         </div>
                       </div>
+                      {formData.qualifierType === 'top_n' && formData.tieBreakerPayout === 'full' && (
+                        <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: currentTheme.warning, fontStyle: 'italic' }}>
+                          * Actual spend may be higher if multiple users tie for a rank (Full Payout enabled).
+                        </p>
+                      )}
                     </div>
                   );
                 })()}
               </div>
-
-
             </div>
           );
         default:
